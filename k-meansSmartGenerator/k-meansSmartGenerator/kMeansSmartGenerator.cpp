@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <stdint.h>
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -16,8 +17,8 @@ void save(const std::string& file_name, const std::vector<std::vector<T>>& data)
 	FILE* f = fopen(file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
 	//
-	size_t size[2] = { data.size(), data[0].size() };
-	if (!fwrite(&size, sizeof(size_t), 2, f)) throw std::runtime_error("value cannot be written");
+	uint64_t size[2] = { data.size(), data[0].size() };
+	if (!fwrite(&size, sizeof(uint64_t), 2, f)) throw std::runtime_error("value cannot be written");
 	/*if (data.size() > 0)
 	{
 		if (!fwrite(*data[0].size(), sizeof(size_t), 1, f)) throw std::runtime_error("value cannot be written");

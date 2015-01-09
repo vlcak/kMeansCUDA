@@ -12,7 +12,7 @@
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_reduce.h>
 
-typedef unsigned long long value_t;
+typedef float value_t;
 typedef unsigned char cluster_t;
 
 
@@ -192,9 +192,9 @@ void load(const std::string& file_name, data_t& data)
 	FILE* f = fopen(file_name.c_str(), "rb");
 	if (!f) throw std::runtime_error("cannot open file for reading");
 	//if (fseek(f, 0, SEEK_END)) throw std::runtime_error("seeking failed");
-	std::size_t count, dimension;
-	if (!fread(&count, sizeof(size_t), 1, f))  throw std::runtime_error("size cannot be read");
-	if (!fread(&dimension, sizeof(size_t), 1, f))  throw std::runtime_error("dimension cannot be read");
+	uint64_t count = 0, dimension = 0;
+	if (!fread(&count, sizeof(uint64_t), 1, f))  throw std::runtime_error("size cannot be read");
+	if (!fread(&dimension, sizeof(uint64_t), 1, f))  throw std::runtime_error("dimension cannot be read");
 	while (count--)
 	{
 		std::vector<value_t> coords(dimension);
