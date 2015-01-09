@@ -28,7 +28,6 @@ std::size_t dimension;
 struct mean
 {
 	mean() : coords(dimension), count(0) {}
-	//mean(const value_t dimensions) : coords(dimensions), count(0) {}
 	std::vector<value_t> coords;
 	value_t count;
 };
@@ -62,12 +61,6 @@ inline value_t distance(std::vector<point>::const_iterator a, const point* b)
 	}
 	return value;
 }
-//inline value_t distance(std::vector<point>::const_iterator a, const point* b)
-//{
-//	value_t x = b->x - a->x;
-//	value_t y = b->y - a->y;
-//	return x*x + y*y;
-//}
 
 struct CountMinDistanceTask
 {
@@ -182,7 +175,6 @@ void save(const std::string& file_name, const data_t& data)
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
 	{
 		if (!fwrite(&it->coords, sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
-		//if (!fwrite(&it->y, sizeof(value_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }
@@ -292,4 +284,3 @@ int main(int argc, const char* argv[])
 	usage();
 	return 1;
 }
-
