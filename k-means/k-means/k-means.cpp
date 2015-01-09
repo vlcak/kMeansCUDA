@@ -88,15 +88,6 @@ struct CountMinDistanceTask
 				nm->coords[i] += cm->coords[i];
 			}
 		}
-
-		/*mean* nm = &newMeans[0];
-		mean* cm = &cmdt.newMeans[0];
-		for (int i = 0; i < means.size(); i++)
-		{
-			nm->count += cm->count;
-			nm->x += cm->x;
-			nm++->y += cm++->y;
-		}*/
 	}
 
 	void operator()(const tbb::blocked_range<size_t>& range) {
