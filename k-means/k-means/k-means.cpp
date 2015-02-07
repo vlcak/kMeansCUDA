@@ -27,7 +27,7 @@ std::size_t dimension;
 
 struct mean
 {
-	mean() : coords(dimension), count(0) {}
+	mean() : coords(dimension, 0), count(0) {}
 	std::vector<value_t> coords;
 	value_t count;
 };
@@ -175,7 +175,7 @@ void load(const std::string& file_name, data_t& data)
 	FILE* f = fopen(file_name.c_str(), "rb");
 	if (!f) throw std::runtime_error("cannot open file for reading");
 	//if (fseek(f, 0, SEEK_END)) throw std::runtime_error("seeking failed");
-	uint64_t count = 0, dimension = 0;
+	uint64_t count = 0;
 	if (!fread(&count, sizeof(uint64_t), 1, f))  throw std::runtime_error("size cannot be read");
 	if (!fread(&dimension, sizeof(uint64_t), 1, f))  throw std::runtime_error("dimension cannot be read");
 	while (count--)

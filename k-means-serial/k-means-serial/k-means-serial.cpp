@@ -9,8 +9,7 @@
 #include <stdexcept>
 #include <stdint.h>
 
-
-typedef unsigned long long value_t;
+typedef float value_t;
 typedef unsigned char cluster_t;
 
 struct point
@@ -41,7 +40,7 @@ inline value_t power2(value_t x)
 	return x*x;
 }
 
-inline distance_t distance(const point& a, const point& b)
+inline value_t distance(const point& a, const point& b)
 {
 	value_t value = 0;;
 	for (size_t i = 0; i < a.coords.size(); i++)
@@ -57,10 +56,10 @@ void assign_to_clusters(data_t& data, const means_t& means)
 	for (data_t::iterator it = data.begin(); it != data.end(); ++it)
 	{
 		cluster_t closest_cluster(0);
-		distance_t mindist(distance(*it, means[0]));
+		value_t mindist(distance(*it, means[0]));
 		for (means_t::const_iterator mit = means.begin() + 1; mit != means.end(); ++mit)
 		{
-			distance_t dist = distance(*it, *mit);
+			value_t dist = distance(*it, *mit);
 			if (dist<mindist) { closest_cluster = static_cast<cluster_t>(std::distance(means.begin(), mit)); mindist = dist; }
 		}
 		it->cluster = closest_cluster;
@@ -74,7 +73,7 @@ void compute_means(const data_t& data, means_t& means)
 	{
 		for (size_t i = 0; i < mit->coords.size(); i++)
 		{
-			mit->coords = std::vector<value_t>(0);
+			mit->coords = std::vector<value_t>(2,0);
 		}
 	}
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
