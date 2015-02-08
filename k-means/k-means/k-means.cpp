@@ -204,17 +204,21 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 {
 	FILE* f = fopen(means_file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
+	if (!fwrite(&dimension, sizeof(std::size_t), 1, f)) throw std::runtime_error("dimension cannot be written");
 	for (means_t::const_iterator it = means.begin(); it != means.end(); ++it)
 	{
-		if (!fwrite(&it->coords, sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&it->coords[0], sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 
 
 	f = fopen(clusters_file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
+	if (!fwrite(&dimension, sizeof(std::size_t), 1, f)) throw std::runtime_error("dimension cannot be written");
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
 	{
+		if (!fwrite(&it->coords[0], sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
