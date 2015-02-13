@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Visualizer
@@ -20,16 +12,13 @@ namespace Visualizer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private float lowerBound = 0f, upperBound = 10f;
-
-        private Color[] myColors;
+        private readonly Color[] _myColors;
 
         public MainWindow()
         {
-
-            myColors = new Color[]
+            _myColors = new[]
             {
                 Colors.Pink,
                 Colors.DeepPink,
@@ -69,36 +58,31 @@ namespace Visualizer
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Microsoft.Win32.OpenFileDialog cofd = new Microsoft.Win32.OpenFileDialog();
-            
-            cofd.DefaultExt = ".dat";
-            cofd.Filter = "Data files (*.dat)|*.dat";
+            var cofd = new Microsoft.Win32.OpenFileDialog {DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat"};
+
             bool? result1 = cofd.ShowDialog();
 
-            Microsoft.Win32.OpenFileDialog mofd = new Microsoft.Win32.OpenFileDialog();
-            
-            mofd.DefaultExt = ".dat";
-            mofd.Filter = "Data files (*.dat)|*.dat";
+            var mofd = new Microsoft.Win32.OpenFileDialog {DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat"};
+
             bool? result2 = mofd.ShowDialog();
 
             if (result1 == true && result2 == true)
             {
                 Point[] points = loadData(cofd.FileName);
-                printPoints(points, false);
+                PrintPoints(points, false);
                 points = loadData(mofd.FileName);
-                printPoints(points, true);
+                PrintPoints(points, true);
             }
         }
 
         private Point[] loadData(string fileName)
         {
-            ulong dimensions;
-            LinkedList<Point> points = new LinkedList<Point>();
-            using (FileStream fs = new FileStream(fileName, FileMode.Open))
+            var points = new LinkedList<Point>();
+            using (var fs = new FileStream(fileName, FileMode.Open))
             {
-                using (BinaryReader br = new BinaryReader(fs))
+                using (var br = new BinaryReader(fs))
                 {
-                    dimensions = br.ReadUInt64();
+                    var dimensions = br.ReadUInt64();
                     while (true)
                     {
                         try
@@ -121,7 +105,7 @@ namespace Visualizer
             return points.ToArray();
         }
 
-        private void printPoints(Point[] points, bool mean)
+        private void PrintPoints(Point[] points, bool mean)
         {
             //OrthographicCamera orthographicCamera = new OrthographicCamera();
             //orthographicCamera.Position = new Point3D(0,0,2);
@@ -132,20 +116,15 @@ namespace Visualizer
                 Shape s;
                 if (mean)
                 {
-                    s = new Ellipse();
-                    s.Stroke = new SolidColorBrush(Colors.Black);
-                    s.Width = 10;
-                    s.Height = 10;
+                    s = new Ellipse {Stroke = new SolidColorBrush(Colors.Black), Width = 10, Height = 10};
                 }
                 else
                 {
-                    s = new Rectangle();
-                    s.Width = 5;
-                    s.Height = 5;
+                    s = new Rectangle {Width = 5, Height = 5};
                 }
-                s.Fill = new SolidColorBrush(myColors[mean ? i : points[i].Cluster]);
+                s.Fill = new SolidColorBrush(_myColors[mean ? i : points[i].Cluster]);
                 s.MouseEnter += r_MouseEnter;
-                s.MouseLeave += delegate(object sender, MouseEventArgs args) { ClusterName.Content = "Cluster:"; };
+                s.MouseLeave += delegate { ClusterName.Content = "Cluster:"; };
                 Canvas.SetLeft(s, Graph.ActualWidth / 4 + points[i].Coords[0] / 20f * Graph.ActualWidth);
                 Canvas.SetTop(s, Graph.ActualHeight / 4 + points[i].Coords[1] / 20f * Graph.ActualHeight);
                 Graph.Children.Add(s);
@@ -156,17 +135,18 @@ namespace Visualizer
 
         void r_MouseEnter(object sender, MouseEventArgs e)
         {
-            if (sender is Shape)
+            var shape = sender as Shape;
+            if (shape != null)
             {
-                ClusterName.Content = "Cluster: " + findCluster(((SolidColorBrush)((Shape)sender).Fill).Color);
+                ClusterName.Content = "Cluster: " + FindCluster(((SolidColorBrush)shape.Fill).Color);
             }
         }
 
-        private int findCluster(Color c)
+        private int FindCluster(Color c)
         {
-            for (int i = 0; i < myColors.Length; i++)
+            for (int i = 0; i < _myColors.Length; i++)
             {
-                if (myColors[i] == c)
+                if (_myColors[i] == c)
                 {
                     return i;
                 }
