@@ -12,6 +12,7 @@
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_reduce.h>
 #include <xmmintrin.h>
+#include <time.h>
 
 typedef float value_t;
 typedef __m128 value128_t;
@@ -76,8 +77,8 @@ inline value_t distance(const point* a, const point* b)
 	value128_t totalSum = _mm_setzero_ps();
 	for (size_t i = 0; i < dimension; i += 4)
 	{
-		value128_t* aCoords = (value128_t*)a->coords + i;
-		value128_t* bCoords = (value128_t*)b->coords + i;
+		value128_t* aCoords = (value128_t*)&a->coords[i];
+		value128_t* bCoords = (value128_t*)&b->coords[i];
 		sub = _mm_sub_ps(*aCoords, *bCoords);
 		mul = _mm_mul_ps(sub, sub);
 		totalSum = _mm_add_ps(totalSum, mul);
@@ -95,8 +96,8 @@ inline value_t distance(means_t::const_iterator a, const point* b)
 	value128_t totalSum = _mm_setzero_ps();
 	for (size_t i = 0; i < dimension; i += 4)
 	{
-		value128_t* aCoords = (value128_t*)(*a)->coords + i;
-		value128_t* bCoords = (value128_t*)b->coords + i;
+		value128_t* aCoords = (value128_t*)&(*a)->coords[i];
+		value128_t* bCoords = (value128_t*)&b->coords[i];
 		sub = _mm_sub_ps(*aCoords, *bCoords);
 		mul = _mm_mul_ps(sub, sub);
 		totalSum = _mm_add_ps(totalSum, mul);
@@ -138,8 +139,8 @@ struct CountMinDistanceTask
 			(*nm)->count += (*cm)->count;
 			for (size_t i = 0; i < dimension; i += 4)
 			{
-				value128_t* aCoords = (value128_t*)(*nm)->coords + i;
-				value128_t* bCoords = (value128_t*)(*cm)->coords + i;
+				value128_t* aCoords = (value128_t*)&(*nm)->coords[i];
+				value128_t* bCoords = (value128_t*)&(*cm)->coords[i];
 				*aCoords = _mm_add_ps(*aCoords, *bCoords);
 			}
 
@@ -171,8 +172,8 @@ struct CountMinDistanceTask
 			}
 			for (size_t i = 0; i < dimension; i+=4)
 			{
-				value128_t* aCoords = (value128_t*)newMeans[cluster]->coords + i;
-				value128_t* bCoords = (value128_t*)(*d)->coords + i;
+				value128_t* aCoords = (value128_t*)&newMeans[cluster]->coords[i];
+				value128_t* bCoords = (value128_t*)&(*d)->coords[i];
 				*aCoords = _mm_add_ps(*aCoords, *bCoords);
 				//newMeans[cluster]->coords[i] += (*d)->coords[i];
 			}
@@ -212,8 +213,8 @@ void assign_to_clusters(data_t& data, means_t& means, size_t granularity)
 		value128_t count = _mm_load1_ps(&invCount);
 		for (size_t i = 0; i < dimension; i++)
 		{		
-			value128_t* aCoords = (value128_t*)(*m)->coords + i;
-			value128_t* bCoords = (value128_t*)(*nm)->coords + i;
+			value128_t* aCoords = (value128_t*)&(*m)->coords[i];
+			value128_t* bCoords = (value128_t*)&(*nm)->coords[i];
 			*aCoords = _mm_mul_ps(*bCoords, count);
 			//(*m)->coords[i] = (*nm)->coords[i] / (*nm)->count;
 		}
@@ -349,10 +350,18 @@ int main(int argc, const char* argv[])
 			++granularity;
 		}
 
+		clock_t start, end;
+		start = clock();
+
 		while (iterations--)
 		{
 			assign_to_clusters(data, means, granularity);
 		}
+
+		end = clock();
+		std::cout << "Time required for execution: "
+		<< (double)(end-start)/CLOCKS_PER_SEC
+		<< " seconds." << "\n\n";
 
 		save_results(means_file_name, clusters_file_name, means, data);
 		return 0;
