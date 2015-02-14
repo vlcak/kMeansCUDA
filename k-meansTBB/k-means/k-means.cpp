@@ -11,6 +11,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_reduce.h>
+#include <time.h>
 
 typedef float value_t;
 typedef unsigned char cluster_t;
@@ -268,10 +269,18 @@ int main(int argc, const char* argv[])
 			++granularity;
 		}
 
+		clock_t start, end;
+		start = clock();
+
 		while (iterations--)
 		{
 			assign_to_clusters(data, means, granularity);
 		}
+
+		end = clock();
+		std::cout << "Time required for execution: "
+		<< (double)(end-start)/CLOCKS_PER_SEC
+		<< " seconds." << "\n\n";
 
 		save_results(means_file_name, clusters_file_name, means, data);
 		return 0;
