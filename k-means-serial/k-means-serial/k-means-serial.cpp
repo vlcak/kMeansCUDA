@@ -12,6 +12,7 @@
 
 typedef float value_t;
 typedef unsigned char cluster_t;
+uint64_t dimension;
 
 struct point
 {
@@ -110,7 +111,7 @@ void load(const std::string& file_name, data_t& data)
 	FILE* f = fopen(file_name.c_str(), "rb");
 	if (!f) throw std::runtime_error("cannot open file for reading");
 	//if (fseek(f, 0, SEEK_END)) throw std::runtime_error("seeking failed");
-	uint64_t count = 0, dimension = 0;
+	uint64_t count = 0;
 	if (!fread(&count, sizeof(uint64_t), 1, f))  throw std::runtime_error("size cannot be read");
 	if (!fread(&dimension, sizeof(uint64_t), 1, f))  throw std::runtime_error("dimension cannot be read");
 	while (count--)
@@ -139,17 +140,23 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 {
 	FILE* f = fopen(means_file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
+	if (!fwrite(&dimension, sizeof(uint64_t), 1, f)) throw std::runtime_error("dimension cannot be written");
+	uint64_t i = 0;
 	for (means_t::const_iterator it = means.begin(); it != means.end(); ++it)
 	{
-		if (!fwrite(&it->coords, sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&it->coords[0], sizeof(value_t), dimension, f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&i, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		++i;
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 
 
 	f = fopen(clusters_file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
+	if (!fwrite(&dimension, sizeof(uint64_t), 1, f)) throw std::runtime_error("dimension cannot be written");
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
 	{
+		if (!fwrite(&it->coords[0], sizeof(value_t), dimension, f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
