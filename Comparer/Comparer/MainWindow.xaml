@@ -1,0 +1,10 @@
+﻿<Window x:Class="Comparer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="462" Width="734">
+    <Grid>
+        <ListBox Name="listBoxDifferentFiles" HorizontalAlignment="Stretch" Margin="12,12,12,12" VerticalAlignment="Stretch" />
+        <Button Name="buttonLoadFiles" Content="Load files" HorizontalAlignment="Right" Margin="12,12,12,12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles_Click"/>
+
+    </Grid>
+</Window>
