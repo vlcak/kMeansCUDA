@@ -105,7 +105,8 @@ inline value_t distance(means_t::const_iterator a, const point* b)
 	}
 	totalSum = _mm_hadd_ps(totalSum, totalSum);
 	totalSum = _mm_hadd_ps(totalSum, totalSum);
-	return (float)_mm_extract_ps(totalSum, 0);
+	float value = (float)_mm_extract_ps(totalSum, 0);
+	return value;
 }
 
 struct CountMinDistanceTask
@@ -155,6 +156,8 @@ struct CountMinDistanceTask
 		cluster_t cluster(0);
 		means_t::const_iterator m;
 		data_t::iterator d = data.begin() + range.begin();
+		value128_t sub, mul, totalSum;
+		value128_t* aCoords,* bCoords;
 		for (tbb::blocked_range<size_t>::const_iterator r = range.begin(); r != range.end(); ++r)
 		{
 			min_distance = LLONG_MAX;
@@ -162,7 +165,24 @@ struct CountMinDistanceTask
 			m = means.cbegin();
 			for (cluster_t i = 0; i < means.size(); ++i)
 			{
-				dist = distance(m, (*d));
+				//dist = distance(m, (*d));
+
+				totalSum = _mm_setzero_ps();
+				aCoords = (value128_t*)(*m)->coords;
+				bCoords = (value128_t*)(*d)->coords;
+				for (size_t i = 0; i < dimension; i += 4)
+				{
+					sub = _mm_sub_ps(*aCoords, *bCoords);
+					mul = _mm_mul_ps(sub, sub);
+					totalSum = _mm_add_ps(totalSum, mul);
+					++aCoords;
+					++bCoords;
+					//value += power2(b->coords[i] - a->coords[i]);
+				}
+				totalSum = _mm_hadd_ps(totalSum, totalSum);
+				totalSum = _mm_hadd_ps(totalSum, totalSum);
+				dist = (float)_mm_extract_ps(totalSum, 0);
+
 				++m;
 				if (dist < min_distance)
 				{
@@ -172,8 +192,8 @@ struct CountMinDistanceTask
 			}
 			for (size_t i = 0; i < dimension; i+=4)
 			{
-				value128_t* aCoords = (value128_t*)&newMeans[cluster]->coords[i];
-				value128_t* bCoords = (value128_t*)&(*d)->coords[i];
+				aCoords = (value128_t*)&newMeans[cluster]->coords[i];
+				bCoords = (value128_t*)&(*d)->coords[i];
 				*aCoords = _mm_add_ps(*aCoords, *bCoords);
 				//newMeans[cluster]->coords[i] += (*d)->coords[i];
 			}
