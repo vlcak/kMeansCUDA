@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <stdint.h>
+#include <time.h>
 
 typedef float value_t;
 typedef unsigned char cluster_t;
@@ -73,7 +74,7 @@ void compute_means(const data_t& data, means_t& means)
 	{
 		for (size_t i = 0; i < mit->coords.size(); i++)
 		{
-			mit->coords = std::vector<value_t>(2,0);
+			mit->coords = std::vector<value_t>(mit->coords.size(),0);
 		}
 	}
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
@@ -188,11 +189,19 @@ int main(int argc, const char* argv[])
 
 		data_t means(data.begin(), data.begin() + k);
 
+		clock_t start, end;
+		start = clock();
+
 		while (iterations--)
 		{
 			assign_to_clusters(data, means);
 			compute_means(data, means);
 		}
+
+		end = clock();
+		std::cout << "Time required for execution: "
+		<< (double)(end-start)/CLOCKS_PER_SEC
+		<< " seconds." << "\n\n";
 
 		save_results(means_file_name, clusters_file_name, means, data);
 		return 0;
