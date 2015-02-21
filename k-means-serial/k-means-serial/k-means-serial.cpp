@@ -19,6 +19,7 @@ struct point
 	point(std::vector<value_t>& coords) : coords(coords), cluster(0) {}
 	std::vector<value_t> coords;
 	cluster_t cluster;
+	value_t distanceToCluster;
 };
 
 typedef std::vector<point> data_t;
@@ -62,8 +63,13 @@ void assign_to_clusters(data_t& data, const means_t& means)
 		for (means_t::const_iterator mit = means.begin() + 1; mit != means.end(); ++mit)
 		{
 			value_t dist = distance(*it, *mit);
-			if (dist<mindist) { closest_cluster = static_cast<cluster_t>(std::distance(means.begin(), mit)); mindist = dist; }
+			if (dist<mindist)
+			{
+				closest_cluster = static_cast<cluster_t>(std::distance(means.begin(), mit));
+				mindist = dist;
+			}
 		}
+		it->distanceToCluster = mindist;
 		it->cluster = closest_cluster;
 	}
 }
@@ -73,10 +79,7 @@ void compute_means(const data_t& data, means_t& means)
 	std::vector<std::size_t> counts(means.size(), 0);
 	for (means_t::iterator mit = means.begin(); mit != means.end(); ++mit)
 	{
-		for (size_t i = 0; i < mit->coords.size(); i++)
-		{
-			mit->coords = std::vector<value_t>(mit->coords.size(),0);
-		}
+		mit->coords = std::vector<value_t>(mit->coords.size(),0);
 	}
 	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
 	{
@@ -158,6 +161,7 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	{
 		if (!fwrite(&it->coords[0], sizeof(value_t), dimension, f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&it->distanceToCluster, sizeof(value_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }

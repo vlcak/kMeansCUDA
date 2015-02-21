@@ -22,6 +22,7 @@ struct point
 	point(std::vector<value_t>& coords) : coords(coords), cluster(0) {}
 	std::vector<value_t> coords;
 	cluster_t cluster;
+	value_t distanceFromCluster;
 };
 
 std::size_t dimension;
@@ -117,6 +118,7 @@ struct CountMinDistanceTask
 				newMeans[cluster].coords[i] += d->coords[i];
 			}
 			++newMeans[cluster].count;
+			d->distanceFromCluster = min_distance;
 			d++->cluster = cluster;
 		}
 	}
@@ -206,10 +208,12 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	FILE* f = fopen(means_file_name.c_str(), "wb");
 	if (!f) throw std::runtime_error("cannot open file for writing");
 	if (!fwrite(&dimension, sizeof(std::size_t), 1, f)) throw std::runtime_error("dimension cannot be written");
+	uint64_t i = 0;
 	for (means_t::const_iterator it = means.begin(); it != means.end(); ++it)
 	{
 		if (!fwrite(&it->coords[0], sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
-		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&i, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		++i;
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 
@@ -221,6 +225,7 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	{
 		if (!fwrite(&it->coords[0], sizeof(value_t), it->coords.size(), f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&it->distanceFromCluster, sizeof(value_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }

@@ -3,8 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="462" Width="734">
     <Grid>
-        <ListBox Name="listBoxDifferentFiles" HorizontalAlignment="Stretch" Margin="12,12,12,12" VerticalAlignment="Stretch" />
-        <Button Name="buttonLoadFiles" Content="Load files" HorizontalAlignment="Right" Margin="12,12,12,12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles_Click"/>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="48" />
+        </Grid.RowDefinitions>
+        <ListBox Name="listBoxDifferentFiles" HorizontalAlignment="Stretch" Margin="12,12,12,12" VerticalAlignment="Stretch" Grid.ColumnSpan="2"/>
+        <Label Name="labelFileName1" Content="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Grid.Column="0" Grid.Row="1" />
+        <Label Name="labelFileName2" Content="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Grid.Column="1" Grid.Row="1" />
+        <Button Name="buttonLoadFiles1" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles1_Click" Grid.Column="0"  Grid.Row="1" />
+        <Button Name="buttonLoadFiles2" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles2_Click" Grid.Column="1"  Grid.Row="1" />
+        <Button Name="buttonRefresh" Content="Refresh" HorizontalAlignment="Right" Width="60" VerticalAlignment="Top" Height="24" Margin="12" Grid.Column="1" Click="ButtonRefresh_OnClick"/>
     </Grid>
 </Window>

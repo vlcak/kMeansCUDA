@@ -12,26 +12,46 @@ namespace Comparer
     /// </summary>
     public partial class MainWindow
     {
+        //private String fileName1, fileName2;
+        private Point[] points1 = null, points2 = null;
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void buttonLoadFiles_Click(object sender, RoutedEventArgs e)
+        private void buttonLoadFiles1_Click(object sender, RoutedEventArgs e)
         {
-            var ofd1 = new OpenFileDialog { DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat" };
+            var ofd = new OpenFileDialog { DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat" };
 
-            bool? result1 = ofd1.ShowDialog();
+            bool? result = ofd.ShowDialog();
 
-            var ofd2 = new OpenFileDialog { DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat" };
 
-            bool? result2 = ofd2.ShowDialog();
-
-            if (result1 == true && result2 == true)
+            if (result == true) ;
             {
-                Point[] points1 = loadData(ofd1.FileName);
-                Point[] points2 = loadData(ofd2.FileName);
-                ComparePoints(points1, points2);
+                points1 = loadData(ofd.FileName);
+                labelFileName1.Content = ofd.FileName;
+                if (points2 != null)
+                {
+                    ComparePoints(points1, points2);
+                }
+            }
+        }
+
+        private void buttonLoadFiles2_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog { DefaultExt = ".dat", Filter = "Data files (*.dat)|*.dat" };
+
+            bool? result = ofd.ShowDialog();
+
+
+            if (result == true) ;
+            {
+                points2 = loadData(ofd.FileName);
+                labelFileName2.Content = ofd.FileName;
+                if (points1 != null)
+                {
+                    ComparePoints(points1, points2);
+                }
             }
         }
 
@@ -53,6 +73,7 @@ namespace Comparer
                                 p.Coords[i] = br.ReadSingle();
                             }
                             p.Cluster = br.ReadByte();
+                            //p.DistanceFromCluster = br.ReadSingle();
                             points.AddLast(p);
                         }
                         catch (EndOfStreamException)
@@ -67,9 +88,12 @@ namespace Comparer
 
         private void ComparePoints(Point[] a, Point[] b)
         {
+            listBoxDifferentFiles.Items.Clear();
+            int differencesCount = 0;
             if (a.Length != b.Length)
             {
                 listBoxDifferentFiles.Items.Add("Files cointains different number of points (" + a.Length + " : " + b.Length + ")");
+                ++differencesCount;
             }
             else
             {
@@ -77,7 +101,8 @@ namespace Comparer
                 {
                     if (a[i].Cluster != b[i].Cluster)
                     {
-                        listBoxDifferentFiles.Items.Add("Points " + i + " are assigned to different cluster (" + a[i].Cluster+ " : " + b[i].Cluster + ")");
+                        listBoxDifferentFiles.Items.Add("Points " + i + " are assigned to different cluster (" + a[i].Cluster + " : " + b[i].Cluster + ") distances from cluster: " + a[i].DistanceFromCluster + " " + b[i].DistanceFromCluster);
+                        ++differencesCount;
                     }
                     else
                     {
@@ -86,12 +111,20 @@ namespace Comparer
                             if (Math.Abs(a[i].Coords[j] - b[i].Coords[j]) > 0.0001)
                             {
                                 listBoxDifferentFiles.Items.Add("Points " + i + " have different coordinate (coordinate: " + j + ", values: " + a[i].Coords[j] + " : " + b[i].Coords[j] + ")");
+                                ++differencesCount;
                             }
                         }
                     }
                 }
             }
-            listBoxDifferentFiles.Items.Add("Compare complete");
+            listBoxDifferentFiles.Items.Add("Compare complete, differences: " + differencesCount);
+        }
+
+        private void ButtonRefresh_OnClick(object sender, RoutedEventArgs e)
+        {
+            points1 = loadData(labelFileName1.Content.ToString());
+            points2 = loadData(labelFileName2.Content.ToString());
+            ComparePoints(points1, points2);
         }
     }
 
@@ -104,5 +137,6 @@ namespace Comparer
 
         public int Cluster;
         public float[] Coords;
+        public float DistanceFromCluster;
     }
 }

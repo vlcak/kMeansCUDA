@@ -36,6 +36,7 @@ struct point
 	value_t* coords;
 	//uint16_t dimensions;
 	cluster_t cluster;
+	value_t distanceFromCluster;
 };
 
 struct mean
@@ -138,11 +139,13 @@ struct CountMinDistanceTask
 		for (means_t::iterator nm = newMeans.begin(); nm != newMeans.end(); ++nm,++cm)
 		{
 			(*nm)->count += (*cm)->count;
+			value128_t* aCoords = (value128_t*)(*nm)->coords;
+			value128_t* bCoords = (value128_t*)(*cm)->coords;
 			for (size_t i = 0; i < dimension; i += 4)
 			{
-				value128_t* aCoords = (value128_t*)&(*nm)->coords[i];
-				value128_t* bCoords = (value128_t*)&(*cm)->coords[i];
 				*aCoords = _mm_add_ps(*aCoords, *bCoords);
+				++aCoords;
+				++bCoords;
 			}
 
 			_aligned_free((*cm)->coords);
@@ -163,7 +166,7 @@ struct CountMinDistanceTask
 			min_distance = LLONG_MAX;
 			
 			m = means.cbegin();
-			for (cluster_t i = 0; i < means.size(); ++i)
+			for (cluster_t c = 0; c < means.size(); ++c)
 			{
 				//dist = distance(m, (*d));
 
@@ -181,25 +184,28 @@ struct CountMinDistanceTask
 				}
 				totalSum = _mm_hadd_ps(totalSum, totalSum);
 				totalSum = _mm_hadd_ps(totalSum, totalSum);
-				dist = (float)_mm_extract_ps(totalSum, 0);
+				dist = totalSum.m128_f32[0];
 
 				++m;
 				if (dist < min_distance)
 				{
 					min_distance = dist;
-					cluster = i;
+					cluster = c;
 				}
 			}
+			aCoords = (value128_t*)newMeans[cluster]->coords;
+			bCoords = (value128_t*)(*d)->coords;
 			for (size_t i = 0; i < dimension; i+=4)
 			{
-				aCoords = (value128_t*)&newMeans[cluster]->coords[i];
-				bCoords = (value128_t*)&(*d)->coords[i];
 				*aCoords = _mm_add_ps(*aCoords, *bCoords);
+				++aCoords;
+				++bCoords;
 				//newMeans[cluster]->coords[i] += (*d)->coords[i];
 			}
 			++newMeans[cluster]->count;
 			(*d)->cluster = cluster;
-			d++;
+			(*d)->distanceFromCluster = min_distance;
+			++d;
 		}
 	}
 
@@ -227,15 +233,17 @@ void assign_to_clusters(data_t& data, means_t& means, size_t granularity)
 	CountMinDistanceTask cmdt = CountMinDistanceTask(data, means);
 	tbb::parallel_reduce(tbb::blocked_range<size_t>(0, data.size(), granularity), cmdt);
 	means_t::const_iterator nm = cmdt.newMeans.cbegin();
-	for (means_t::iterator m = means.begin(); m!=means.end(); m++,nm++)
+	for (means_t::iterator m = means.begin(); m != means.end(); ++m, ++nm)
 	{
-		float invCount = (1 / (*nm)->count);
+		value_t invCount = (1 / (*nm)->count);
 		value128_t count = _mm_load1_ps(&invCount);
-		for (size_t i = 0; i < dimension; i++)
+		value128_t* aCoords = (value128_t*)(*m)->coords;
+		value128_t* bCoords = (value128_t*)(*nm)->coords;
+		for (size_t i = 0; i < dimension; i += 4)
 		{		
-			value128_t* aCoords = (value128_t*)&(*m)->coords[i];
-			value128_t* bCoords = (value128_t*)&(*nm)->coords[i];
 			*aCoords = _mm_mul_ps(*bCoords, count);
+			++aCoords;
+			++bCoords;
 			//(*m)->coords[i] = (*nm)->coords[i] / (*nm)->count;
 		}
 		_aligned_free ((*nm)->coords);
@@ -318,6 +326,7 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	{
 		if (!fwrite(&(*it)->coords[0], sizeof(value_t), realDimension, f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&(*it)->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
+		if (!fwrite(&(*it)->distanceFromCluster, sizeof(value_t), 1, f)) throw std::runtime_error("distance cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }
