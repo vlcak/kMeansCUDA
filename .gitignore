@@ -138,6 +138,9 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
+#Result data from projects
+k-means*/*.dat
+
 # =========================
 # Windows detritus
 # =========================

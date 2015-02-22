@@ -26,7 +26,7 @@ namespace Comparer
             bool? result = ofd.ShowDialog();
 
 
-            if (result == true) ;
+            if (result != null && result.Value)
             {
                 points1 = loadData(ofd.FileName);
                 labelFileName1.Content = ofd.FileName;
@@ -44,7 +44,7 @@ namespace Comparer
             bool? result = ofd.ShowDialog();
 
 
-            if (result == true) ;
+            if (result != null && result.Value)
             {
                 points2 = loadData(ofd.FileName);
                 labelFileName2.Content = ofd.FileName;
@@ -124,6 +124,30 @@ namespace Comparer
         {
             points1 = loadData(labelFileName1.Content.ToString());
             points2 = loadData(labelFileName2.Content.ToString());
+            ComparePoints(points1, points2);
+        }
+
+        private void ButtonSwitch_OnClick(object sender, RoutedEventArgs e)
+        {
+            string file1 = labelFileName1.Content.ToString();
+            string file2 = labelFileName2.Content.ToString();
+            if (!file1.Contains("clusters"))
+            {
+                file1 = file1.Insert(file1.LastIndexOf("means"), "clusters");
+                file1 = file1.Remove(file1.LastIndexOf("means"), 5);
+                file2 = file2.Insert(file2.LastIndexOf("means"), "clusters");
+                file2 = file2.Remove(file2.LastIndexOf("means"), 5);
+            }
+            else
+            {
+                file1 = file1.Replace("clusters", "means");
+                file2 = file2.Replace("clusters", "means");
+            }
+
+            points1 = loadData(file1);
+            points2 = loadData(file2);
+            labelFileName1.Content = file1;
+            labelFileName2.Content = file2;
             ComparePoints(points1, points2);
         }
     }

@@ -17,5 +17,6 @@
         <Button Name="buttonLoadFiles1" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles1_Click" Grid.Column="0"  Grid.Row="1" />
         <Button Name="buttonLoadFiles2" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles2_Click" Grid.Column="1"  Grid.Row="1" />
         <Button Name="buttonRefresh" Content="Refresh" HorizontalAlignment="Right" Width="60" VerticalAlignment="Top" Height="24" Margin="12" Grid.Column="1" Click="ButtonRefresh_OnClick"/>
+        <Button Name="buttonSwitch" Content="Switch" HorizontalAlignment="Left" Width="60" VerticalAlignment="Top" Height="24" Margin="12" Grid.Column="0" Click="ButtonSwitch_OnClick"/>
     </Grid>
 </Window>
