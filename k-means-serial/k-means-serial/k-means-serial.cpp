@@ -161,7 +161,7 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	{
 		if (!fwrite(&it->coords[0], sizeof(value_t), dimension, f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&it->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
-		if (!fwrite(&it->distanceToCluster, sizeof(value_t), 1, f)) throw std::runtime_error("value cannot be written");
+		//if (!fwrite(&it->distanceToCluster, sizeof(value_t), 1, f)) throw std::runtime_error("value cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }
