@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
 
 namespace Comparer
@@ -14,9 +15,30 @@ namespace Comparer
     {
         //private String fileName1, fileName2;
         private Point[] points1 = null, points2 = null;
+        private String path;
         public MainWindow()
         {
+            path = "..\\..\\..\\..\\";
+
+            ProjectData[] projectData = new[]
+            {
+                new ProjectData {Label = "Serial", Path = "k-means-serial\\k-means-serial\\"},
+                new ProjectData {Label = "TBB", Path = "k-meansTBB\\k-means\\"},
+                new ProjectData {Label = "TBB_SSE", Path = "k-meansTBB_SSE\\k-means\\"},
+                new ProjectData {Label = "CUDA", Path = "k-meansCUDA\\k-meansCUDA\\"}
+            };
+
             InitializeComponent();
+            foreach (var project in projectData)
+            {
+                ComboBoxLocation1.Items.Add(project);
+                ComboBoxLocation2.Items.Add(project);
+            }
+            ComboBoxDimension.Items.Add("2");
+            ComboBoxDimension.Items.Add("3");
+            ComboBoxDimension.Items.Add("4");
+            ComboBoxDimension.Items.Add("8");
+            ComboBoxDimension.SelectedItem = "3";
         }
 
         private void buttonLoadFiles1_Click(object sender, RoutedEventArgs e)
@@ -108,7 +130,7 @@ namespace Comparer
                     {
                         for (int j = 0; j < a[i].Coords.Length; j++)
                         {
-                            if (Math.Abs(a[i].Coords[j] - b[i].Coords[j]) > 0.0001)
+                            if (Double.IsNaN(a[i].Coords[j]) || Double.IsNaN(b[i].Coords[j]) || (Math.Abs(a[i].Coords[j] - b[i].Coords[j]) > 0.0001))
                             {
                                 listBoxDifferentFiles.Items.Add("Points " + i + " have different coordinate (coordinate: " + j + ", values: " + a[i].Coords[j] + " : " + b[i].Coords[j] + ")");
                                 ++differencesCount;
@@ -150,6 +172,28 @@ namespace Comparer
             labelFileName2.Content = file2;
             ComparePoints(points1, points2);
         }
+
+        private void ComboBoxLocation1_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string filePath1 = string.Format("{0}{1}clusters{2}D.dat", path, ((ProjectData) e.AddedItems[0]).Path, ComboBoxDimension.SelectedItem);
+            points1 = loadData(filePath1);
+            labelFileName1.Content = filePath1;
+            if (points2 != null)
+            {
+                ComparePoints(points1, points2);
+            }
+        }
+
+        private void ComboBoxLocation2_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string filePath2 = string.Format("{0}{1}clusters{2}D.dat", path, ((ProjectData)e.AddedItems[0]).Path, ComboBoxDimension.SelectedItem);
+            points2 = loadData(filePath2);
+            labelFileName2.Content = filePath2;
+            if (points1 != null)
+            {
+                ComparePoints(points1, points2);
+            }
+        }
     }
 
     internal class Point
@@ -162,5 +206,15 @@ namespace Comparer
         public int Cluster;
         public float[] Coords;
         public float DistanceFromCluster;
+    }
+
+    internal class ProjectData
+    {
+        public string Label;
+        public string Path;
+        public override string ToString()
+        {
+            return Label;
+        }
     }
 }

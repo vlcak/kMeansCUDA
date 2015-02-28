@@ -8,15 +8,19 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
         </Grid.RowDefinitions>
-        <ListBox Name="listBoxDifferentFiles" HorizontalAlignment="Stretch" Margin="12,12,12,12" VerticalAlignment="Stretch" Grid.ColumnSpan="2"/>
-        <Label Name="labelFileName1" Content="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Grid.Column="0" Grid.Row="1" />
-        <Label Name="labelFileName2" Content="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Grid.Column="1" Grid.Row="1" />
-        <Button Name="buttonLoadFiles1" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles1_Click" Grid.Column="0"  Grid.Row="1" />
-        <Button Name="buttonLoadFiles2" Content="Load files" HorizontalAlignment="Right" Margin="12" VerticalAlignment="Bottom" Height="24" Width="75" Click="buttonLoadFiles2_Click" Grid.Column="1"  Grid.Row="1" />
-        <Button Name="buttonRefresh" Content="Refresh" HorizontalAlignment="Right" Width="60" VerticalAlignment="Top" Height="24" Margin="12" Grid.Column="1" Click="ButtonRefresh_OnClick"/>
-        <Button Name="buttonSwitch" Content="Switch" HorizontalAlignment="Left" Width="60" VerticalAlignment="Top" Height="24" Margin="12" Grid.Column="0" Click="ButtonSwitch_OnClick"/>
+        <ComboBox Name="ComboBoxDimension" Height="24" Width="42" Grid.ColumnSpan="2" />
+        <ComboBox Name="ComboBoxLocation1" Height="24" Width="100" Margin="6,6,30,6" HorizontalAlignment="Right" SelectionChanged="ComboBoxLocation1_OnSelectionChanged" />
+        <ComboBox Name="ComboBoxLocation2" Height="24" Width="100" Margin="30,6,6,6" HorizontalAlignment="Left" Grid.Column="1" SelectionChanged="ComboBoxLocation2_OnSelectionChanged"/>
+        <ListBox Name="listBoxDifferentFiles" HorizontalAlignment="Stretch" Margin="6" VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.Row="1"/>
+        <Label Name="labelFileName1" Content="" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6" Grid.Column="0" Grid.Row="2" />
+        <Label Name="labelFileName2" Content="" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6" Grid.Column="1" Grid.Row="2" />
+        <Button Name="buttonLoadFiles1" Content="Load files" HorizontalAlignment="Right" Margin="6" VerticalAlignment="Center" Height="24" Width="75" Click="buttonLoadFiles1_Click" Grid.Column="0"  Grid.Row="2" />
+        <Button Name="buttonLoadFiles2" Content="Load files" HorizontalAlignment="Right" Margin="6" VerticalAlignment="Center" Height="24" Width="75" Click="buttonLoadFiles2_Click" Grid.Column="1"  Grid.Row="2" />
+        <Button Name="buttonRefresh" Content="Refresh" HorizontalAlignment="Right" Width="60" VerticalAlignment="Center" Height="24" Margin="6" Grid.Column="1" Click="ButtonRefresh_OnClick"/>
+        <Button Name="buttonSwitch" Content="Switch" HorizontalAlignment="Left" Width="60" VerticalAlignment="Center" Height="24" Margin="6" Grid.Column="0" Click="ButtonSwitch_OnClick"/>
     </Grid>
 </Window>
