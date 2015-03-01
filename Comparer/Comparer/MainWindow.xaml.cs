@@ -29,6 +29,7 @@ namespace Comparer
             };
 
             InitializeComponent();
+
             foreach (var project in projectData)
             {
                 ComboBoxLocation1.Items.Add(project);
@@ -175,7 +176,8 @@ namespace Comparer
 
         private void ComboBoxLocation1_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string filePath1 = string.Format("{0}{1}clusters{2}D.dat", path, ((ProjectData) e.AddedItems[0]).Path, ComboBoxDimension.SelectedItem);
+            string type = labelFileName2.Content.ToString().Contains("clusters") ? "clusters" : "means";
+            string filePath1 = string.Format("{0}{1}{2}{3}D.dat", path, ((ProjectData) e.AddedItems[0]).Path, type, ComboBoxDimension.SelectedItem);
             points1 = loadData(filePath1);
             labelFileName1.Content = filePath1;
             if (points2 != null)
@@ -186,10 +188,36 @@ namespace Comparer
 
         private void ComboBoxLocation2_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string filePath2 = string.Format("{0}{1}clusters{2}D.dat", path, ((ProjectData)e.AddedItems[0]).Path, ComboBoxDimension.SelectedItem);
+            string type = labelFileName1.Content.ToString().Contains("clusters") ? "clusters" : "means";
+
+            string filePath2 = string.Format("{0}{1}{2}{3}D.dat", path, ((ProjectData)e.AddedItems[0]).Path, type, ComboBoxDimension.SelectedItem);
             points2 = loadData(filePath2);
             labelFileName2.Content = filePath2;
             if (points1 != null)
+            {
+                ComparePoints(points1, points2);
+            }
+        }
+
+        private void ComboBoxDimension_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboBoxLocation1.SelectedItem != null)
+            {
+                string filePath1 = string.Format("{0}{1}clusters{2}D.dat", path,
+                    ((ProjectData) ComboBoxLocation1.SelectedItem).Path, e.AddedItems[0]);
+                points1 = loadData(filePath1);
+                labelFileName1.Content = filePath1;
+            }
+
+            if (ComboBoxLocation2.SelectedItem != null)
+            {
+                string filePath2 = string.Format("{0}{1}clusters{2}D.dat", path,
+                    ((ProjectData) ComboBoxLocation2.SelectedItem).Path, e.AddedItems[0]);
+                points2 = loadData(filePath2);
+                labelFileName2.Content = filePath2;
+            }
+
+            if (points1 != null && points2 != null)
             {
                 ComparePoints(points1, points2);
             }
