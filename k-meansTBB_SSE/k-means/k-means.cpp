@@ -7,11 +7,14 @@
 #include <stdlib.h>
 #include <sstream>
 #include <stdexcept>
+
 #include <tbb/task_scheduler_init.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_reduce.h>
+
 #include <xmmintrin.h>
+
 #include <time.h>
 
 typedef float value_t;
@@ -326,7 +329,7 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	{
 		if (!fwrite(&(*it)->coords[0], sizeof(value_t), realDimension, f)) throw std::runtime_error("value cannot be written");
 		if (!fwrite(&(*it)->cluster, sizeof(cluster_t), 1, f)) throw std::runtime_error("value cannot be written");
-		if (!fwrite(&(*it)->distanceFromCluster, sizeof(value_t), 1, f)) throw std::runtime_error("distance cannot be written");
+		//if (!fwrite(&(*it)->distanceFromCluster, sizeof(value_t), 1, f)) throw std::runtime_error("distance cannot be written");
 	}
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }
