@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "038trackball", "038trackball.csproj", "{3A650BB5-31DD-4637-9F0D-457A72D2BC23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualizer3D", "Visualizer3D.csproj", "{3A650BB5-31DD-4637-9F0D-457A72D2BC23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

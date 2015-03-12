@@ -20,14 +20,14 @@ namespace Visualizer
         {
             _myColors = new[]
             {
-                Colors.Pink,
-                Colors.DeepPink,
                 Colors.Red,
                 Colors.Green,
+                Colors.Blue,
+                Colors.Pink,
+                Colors.DeepPink,
                 Colors.Lime,
                 Colors.MediumSpringGreen,
                 Colors.DarkOliveGreen,
-                Colors.Blue,
                 Colors.Aqua,
                 Colors.MediumTurquoise,
                 Colors.Purple,

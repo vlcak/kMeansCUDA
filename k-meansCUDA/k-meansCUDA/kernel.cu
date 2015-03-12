@@ -16,13 +16,15 @@
 #include <stdlib.h>
 #include <vector>
 
+//#include "baseKernel.h"
 uint64_t dimension;
 typedef float value_t;
 typedef unsigned char cluster_t;
 
 cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
-cudaError_t countKMeansManyMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
+cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
+cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 
 void usage()
 {
@@ -111,7 +113,7 @@ __global__ void countDivMeansKernel(const uint32_t meansSize, const uint32_t* co
     means[id] = meansSums[id] / (value_t)counts[blockIdx.x];
 }
 
-__global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+__global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters)
 {
     //int id = threadIdx.x;
     value_t minDistance = LLONG_MAX, difference = 0;
@@ -120,11 +122,11 @@ __global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const 
 
     for (size_t i = 0; i < meansSize; ++i)
     {
-        difference = means[i * dimension + threadIdx.x] - data[blockIdx.x * dimension + threadIdx.x];
+        difference = means[i * blockDim.x + threadIdx.x] - data[blockIdx.x * blockDim.x + threadIdx.x];
         distances[threadIdx.x] = difference * difference;
         //sum distances in block
         __syncthreads();
-        for (size_t j = dimension / 2; j > 0; j >>= 1)
+        for (size_t j = blockDim.x / 2; j > 0; j >>= 1)
         {
             if (threadIdx.x < j)
             {
@@ -146,10 +148,114 @@ __global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const 
         assignedClusters[blockIdx.x] = clusterID;
     }
 
-    atomicAdd(&measnSums[clusterID * dimension + threadIdx.x], data[blockIdx.x * dimension + threadIdx.x]);
+    atomicAdd(&measnSums[clusterID * blockDim.x + threadIdx.x], data[blockIdx.x * blockDim.x + threadIdx.x]);
+}
+
+template <uint32_t blockSize>
+__global__ void findNearestClusterManyDimUnrolledKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters)
+{
+    //int id = threadIdx.x;
+    value_t minDistance = LLONG_MAX, difference = 0;
+    int clusterID = -1;
+    extern __shared__ value_t distances[];
+
+    uint32_t j;
+
+    for (size_t i = 0; i < meansSize; ++i)
+    {
+        difference = means[i * blockDim.x + threadIdx.x] - data[blockIdx.x * blockDim.x + threadIdx.x];
+        distances[threadIdx.x] = difference * difference;
+        //sum distances in block
+        __syncthreads();
+
+
+        if (blockSize >= 512) { if (threadIdx.x < 256) { distances[threadIdx.x] += distances[threadIdx.x + 256]; } __syncthreads(); }
+        if (blockSize >= 256) { if (threadIdx.x < 128) { distances[threadIdx.x] += distances[threadIdx.x + 128]; } __syncthreads(); }
+        if (blockSize >= 128) { if (threadIdx.x <  64) { distances[threadIdx.x] += distances[threadIdx.x +  64]; } __syncthreads(); }
+
+        if (threadIdx.x < 32)
+        {
+            if (blockSize >= 64) distances[threadIdx.x] += distances[threadIdx.x + 32];
+            if (blockSize >= 32) distances[threadIdx.x] += distances[threadIdx.x + 16];
+            if (blockSize >= 16) distances[threadIdx.x] += distances[threadIdx.x + 8];
+            if (blockSize >= 8) distances[threadIdx.x] += distances[threadIdx.x + 4];
+            if (blockSize >= 4) distances[threadIdx.x] += distances[threadIdx.x + 2];
+            if (blockSize >= 2) distances[threadIdx.x] += distances[threadIdx.x + 1];
+        }
+
+
+        if ((minDistance > distances[0]))
+        {
+            minDistance = distances[0];
+            clusterID = i;
+        }
+    }
+
+    if (threadIdx.x == 0)
+    {
+        atomicInc(&counts[clusterID], INT32_MAX);
+        assignedClusters[blockIdx.x] = clusterID;
+    }
+
+    atomicAdd(&measnSums[clusterID * blockDim.x + threadIdx.x], data[blockIdx.x * blockDim.x + threadIdx.x]);
+}
+
+__global__ void findNearestClusterFewMeansKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+{
+    unsigned int id = threadIdx.x + blockDim.x * (blockIdx.y * gridDim.x + blockIdx.x);
+    value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
+    int clusterID = -1;
+    for (size_t i = 0; i < meansSize; ++i)
+    {
+        distance = 0;
+        for (size_t j = 0; j < dimension; ++j)
+        {
+            difference = means[i * dimension + j] - data[id * dimension + j];
+            distance += difference * difference;
+        }
+        if (minDistance > distance)
+        {
+            minDistance = distance;
+            clusterID = i;
+        }
+    }
+    if (clusterID != -1)
+    {
+        atomicInc(&counts[blockIdx.y * meansSize + clusterID], INT32_MAX);
+        assignedClusters[id] = clusterID;
+        for (size_t j = 0; j < dimension; ++j)
+        {
+            atomicAdd(&measnSums[blockIdx.y * meansSize * dimension + clusterID * dimension + j], data[id * dimension + j]);
+        }
+    }
+}
+
+__global__ void countDivFewMeansKernel(const uint32_t meansSize, uint32_t* counts, value_t* means, const value_t* meansSums, const uint32_t dimension, const uint32_t cellsCount)
+{
+    int id = threadIdx.x + blockIdx.x * blockDim.x;
+
+    uint32_t count = 0;
+
+    means[id] = meansSums[id];
+
+    count = counts[blockIdx.x];
+
+    for (size_t i = 1; i < cellsCount; i++)
+    {
+        means[id] += meansSums[i * dimension * meansSize + id];
+        count += counts[i * meansSize + blockIdx.x];
+    }
+
+    means[id] /= count;
+
+    if (threadIdx.x == 0)
+    {
+        counts[blockIdx.x] = count;
+    }
 }
 #pragma endregion
 
+#pragma region Common Functions
 value_t* load(const std::string& file_name, uint64_t& dataSize)
 {
 	FILE* f = fopen(file_name.c_str(), "rb");
@@ -216,7 +322,7 @@ int main(int argc, const char* argv[])
 		memcpy(means, data, k * dimension * sizeof(value_t));
 
 		// Add vectors in parallel.
-        cudaError_t cudaStatus = countKMeansManyMeans(iterations, dataSize, data, k, means, assignedClusters, dimension);
+        cudaError_t cudaStatus = countKMeansFewMeans(iterations, dataSize, data, k, means, assignedClusters, dimension);
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "addWithCuda failed!");
 			return 1;
@@ -241,6 +347,8 @@ int main(int argc, const char* argv[])
 	usage();
 	return 1;
 }
+
+#pragma endregion
 
 #pragma region Tasks
 cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
@@ -491,7 +599,7 @@ Error:
     return cudaStatus;
 }
 
-cudaError_t countKMeansManyMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
 {
     value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
     uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
@@ -578,12 +686,12 @@ cudaError_t countKMeansManyMeans(const uint32_t iterations, const uint32_t dataS
     //int nBlocksM = (meansSize - 1) / blockSizeM + 1;
     for (uint32_t i = 0; i < iterations; ++i)
     {
-        findNearestClusterManyDimKernel << <dataSize, dimension, sizeof(value_t) * dimension >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
+        findNearestClusterManyDimUnrolledKernel<32><< <dataSize, dimension, sizeof(value_t)* dimension >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters);
         cudaDeviceSynchronize();
         //cudaMemcpy(testAssigned, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
         //std::vector<uint32_t> t(testAssigned, testAssigned + dataSize);
         //cudaMemcpy(testDistances, dev_meansSums, meansSize * dimension * sizeof(value_t), cudaMemcpyDeviceToHost);
-        //std::vector<uint32_t> t2(testDistances, testDistances + meansSize);
+        //std::vector<value_t> t2(testDistances, testDistances + meansSize);
         //cudaMemcpy(testCounts, dev_counts, meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
         //std::vector<uint32_t> t3(testCounts, testCounts+ meansSize);
         countDivMeansKernel << <meansSize, dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension);
@@ -591,6 +699,178 @@ cudaError_t countKMeansManyMeans(const uint32_t iterations, const uint32_t dataS
 
         cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
         cudaMemset(dev_counts, 0, meansSize * sizeof(uint32_t));
+    }
+
+    // Check for any errors launching the kernel
+    cudaStatus = cudaGetLastError();
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
+        goto Error;
+    }
+
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // any errors encountered during the launch.
+    cudaStatus = cudaDeviceSynchronize();
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
+        goto Error;
+    }
+
+    cudaStatus = cudaMemcpy(means, dev_means, meansSize * dimension * sizeof(value_t), cudaMemcpyDeviceToHost);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy failed!");
+        goto Error;
+    }
+
+    cudaStatus = cudaMemcpy(assignedClusters, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy failed!");
+        goto Error;
+    }
+
+
+
+Error:
+    cudaFree(dev_data);
+    cudaFree(dev_means);
+    cudaFree(dev_meansSums);
+    cudaFree(dev_assignedClusters);
+    cudaFree(dev_counts);
+
+
+    end = clock();
+    std::cout << "Time required for execution: "
+        << (double)(end - start) / CLOCKS_PER_SEC
+        << " seconds." << "\n\n";
+
+    return cudaStatus;
+}
+
+cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+{
+    value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
+    uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+    cudaError_t cudaStatus;
+
+    uint32_t cellsCount = 4;
+
+
+    uint32_t* testAssigned,* testCounts;
+    value_t* testDistances;
+
+    testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
+    testCounts = (uint32_t*)malloc(cellsCount * meansSize * sizeof(uint32_t));
+    testDistances = (value_t*)malloc(cellsCount * meansSize * dimension * sizeof(value_t));
+
+    clock_t start, end;
+    start = clock();
+
+    //std::vector<uint32_t> testVector(meansSize);
+
+    // Choose which GPU to run on, change this on a multi-GPU system.
+    cudaStatus = cudaSetDevice(0);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+        goto Error;
+    }
+
+    // Allocate GPU buffers for three vectors (two input, one output)    .
+    cudaStatus = cudaMalloc((void**)&dev_means, meansSize * dimension * sizeof(value_t));
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed!");
+        goto Error;
+    }
+
+    cudaStatus = cudaMalloc((void**)&dev_meansSums, cellsCount * meansSize * dimension * sizeof(value_t));
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed!");
+        goto Error;
+    }
+    else
+    {
+        cudaMemset(dev_meansSums, 0, cellsCount * meansSize * dimension * sizeof(value_t));
+    }
+
+    cudaStatus = cudaMalloc((void**)&dev_data, dataSize * dimension * sizeof(value_t));
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed!");
+        goto Error;
+    }
+
+    cudaStatus = cudaMalloc((void**)&dev_assignedClusters, dataSize * sizeof(uint32_t));
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed!");
+        goto Error;
+    }
+
+    cudaStatus = cudaMalloc((void**)&dev_counts, cellsCount * meansSize * sizeof(uint32_t));
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed!");
+        goto Error;
+    }
+    else
+    {
+        cudaMemset(dev_counts, 0, cellsCount * meansSize * sizeof(uint32_t));
+    }
+
+    // Copy input vectors from host memory to GPU buffers.
+    cudaStatus = cudaMemcpy(dev_means, means, meansSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy failed!");
+        goto Error;
+    }
+
+    cudaStatus = cudaMemcpy(dev_data, data, dataSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy failed!");
+        goto Error;
+    }
+
+    //uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
+    //value_t* testMeans = (value_t*)calloc(meansSize * dimension , sizeof(value_t));
+
+    // Launch a kernel on the GPU with one thread for each element.
+    int blockSizeN = 32;
+    dim3 gridSize;
+    gridSize.x = ((dataSize - 1) / blockSizeN) / cellsCount + 1;
+    gridSize.y = cellsCount;
+    //int blockSizeM = 16;
+    //int nBlocksM = (meansSize - 1) / blockSizeM + 1;
+    for (uint32_t i = 0; i < iterations; ++i)
+    {
+        findNearestClusterFewMeansKernel << <gridSize, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
+        cudaDeviceSynchronize();
+
+        //cudaMemcpy(testAssigned, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+        //std::vector<uint32_t> t(testAssigned, testAssigned + dataSize);
+        //cudaMemcpy(testDistances, dev_meansSums, cellsCount * meansSize * dimension * sizeof(value_t), cudaMemcpyDeviceToHost);
+        //std::vector<value_t> t2(testDistances, testDistances + meansSize * cellsCount);
+        //cudaMemcpy(testCounts, dev_counts, cellsCount * meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+        //std::vector<uint32_t> t3(testCounts, testCounts + meansSize * cellsCount);
+
+        //std::vector<uint32_t> t5(t.begin() + 9900, t.end());
+
+        //int sum_of_elems2 = 0;
+        //for (size_t i = 0; i < 128; i++)
+        //{
+        //    sum_of_elems2 += t3[i];
+        //}
+
+        countDivFewMeansKernel << <meansSize, dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, cellsCount);
+        cudaDeviceSynchronize();
+
+        //cudaMemcpy(testCounts, dev_counts, cellsCount * meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+        //std::vector<uint32_t> t4(testCounts, testCounts + meansSize * cellsCount);
+
+
+        //int sum_of_elems = 0;
+        //for (size_t i = 0; i < 32; i++)
+        //{
+        //    sum_of_elems += t4[i];
+        //}
+
+        cudaMemset(dev_meansSums, 0, cellsCount * meansSize * dimension * sizeof(value_t));
+        cudaMemset(dev_counts, 0, cellsCount * meansSize * sizeof(uint32_t));
     }
 
     // Check for any errors launching the kernel
