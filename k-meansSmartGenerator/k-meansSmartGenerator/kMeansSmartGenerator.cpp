@@ -96,9 +96,21 @@ std::vector<std::vector<T>> generateUniformPoints(const unsigned long long point
 }
 
 template<typename T>
-std::vector<std::vector<T>> generateUniformPoints(const unsigned int clustersCount, const float clusterRadius, const unsigned long long pointsCount, const unsigned int dimensions, T lowerBound, T upperBound)
+std::vector<std::vector<T>> generateUniformPoints(const unsigned int clustersCount, const float clusterRadius, const unsigned long long pointsCount, const unsigned int dimensions, T lowerBound, T upperBound, std::string fileName)
 {
+	FILE* f = fopen(fileName.c_str(), "wb");
+	if (!f) throw std::runtime_error("cannot open file for writing");
+	//
+	uint64_t size[2] = { pointsCount, dimensions };
+	if (!fwrite(&size, sizeof(uint64_t), 2, f)) throw std::runtime_error("value cannot be written");
 	std::vector<std::vector<T> > points = generateUniformPoints(clustersCount, dimensions, lowerBound, upperBound);
+	for (std::vector<T> point : points)
+	{
+		for (T coord : point)
+		{
+			if (!fwrite(&coord, sizeof(T), 1, f)) throw std::runtime_error("value cannot be written");
+		}
+	}
 	std::normal_distribution<T> vectorRandom(0.0, 1.0);
 	std::uniform_real_distribution<T> lengthRandom(0, clusterRadius);
 	std::default_random_engine re;
@@ -114,15 +126,31 @@ std::vector<std::vector<T>> generateUniformPoints(const unsigned int clustersCou
 			std::bind2nd(std::multiplies<T>(), length));
 		std::transform(points[i % clustersCount].begin(), points[i % clustersCount].end(), point.begin(), point.begin(),
 			std::plus<T>());
-		points.push_back(point);
+		for (T coord : point)
+		{
+			if (!fwrite(&coord, sizeof(T), 1, f)) throw std::runtime_error("value cannot be written");
+		}
 	}
+	if (fclose(f)) throw std::runtime_error("closing the file failed");
 	return points;
 }
 
 template<typename T>
-std::vector<std::vector<T>> generateNormalPoints(const unsigned int clustersCount, const float clusterRadius, const unsigned long long pointsCount, const unsigned int dimensions, T lowerBound, T upperBound)
+std::vector<std::vector<T>> generateNormalPoints(const unsigned int clustersCount, const float clusterRadius, const unsigned long long pointsCount, const unsigned int dimensions, T lowerBound, T upperBound, std::string fileName)
 {
+	FILE* f = fopen(fileName.c_str(), "wb");
+	if (!f) throw std::runtime_error("cannot open file for writing");
+	//
+	uint64_t size[2] = { pointsCount, dimensions };
+	if (!fwrite(&size, sizeof(uint64_t), 2, f)) throw std::runtime_error("value cannot be written");
 	std::vector<std::vector<T> > points = generateUniformPoints(clustersCount, dimensions, lowerBound, upperBound);
+	for (std::vector<T> point : points)
+	{
+		for (T coord : point)
+		{
+			if (!fwrite(&coord, sizeof(T), 1, f)) throw std::runtime_error("value cannot be written");
+		}
+	}
 	std::normal_distribution<T> vectorRandom(0.0, 1.0);
 	std::default_random_engine re;
 	std::vector<T> point(dimensions);
@@ -137,8 +165,12 @@ std::vector<std::vector<T>> generateNormalPoints(const unsigned int clustersCoun
 			std::bind2nd(std::multiplies<T>(), length));
 		std::transform(points[i % clustersCount].begin(), points[i % clustersCount].end(), point.begin(), point.begin(),
 			std::plus<T>());
-		points.push_back(point);
+		for (T coord : point)
+		{
+			if (!fwrite(&coord, sizeof(T), 1, f)) throw std::runtime_error("value cannot be written");
+		}
 	}
+	if (fclose(f)) throw std::runtime_error("closing the file failed");
 	return points;
 }
 
@@ -233,7 +265,38 @@ int main(int argc, const char* argv[])
 		}
 	}
 
-	if (useDouble)
+    std::vector< std::vector<double> > pointsD;
+    std::vector< std::vector<float> > pointsF;
+
+    lowerBound = -128;
+    upperBound = 128;
+    std::string fileName;
+	size_t cluster = 32;
+
+	for (size_t size = 524288; size <= 1048576; size *= 2)
+    {
+        for (size_t dimension = 224; dimension <= 256; dimension = dimension < 32 ? dimension * 2 : dimension + 32)
+        {
+            //for (size_t cluster = 2; cluster <= 32; cluster *= 2)
+            {
+                std::cout << "Generating data: size:" + std::to_string(size / 1000) + "K, dimension: " + std::to_string(dimension) + ", clusters count = " + std::to_string(cluster) << std::endl;
+                fileName = "../../data/dataDN" + std::to_string(dimension) + "D" + std::to_string(size / 1000) + "K" + std::to_string(cluster) + "C.dat";
+				pointsD = generateNormalPoints<double>(cluster, clusterRadius, size, dimension, lowerBound, upperBound, fileName);
+                //save(fileName, pointsD);
+                fileName = "../../data/dataDU" + std::to_string(dimension) + "D" + std::to_string(size / 1000) + "K" + std::to_string(cluster) + "C.dat";
+				pointsD = generateUniformPoints<double>(cluster, clusterRadius, size, dimension, lowerBound, upperBound, fileName);
+                //save(fileName, pointsD);
+                fileName = "../../data/dataFN" + std::to_string(dimension) + "D" + std::to_string(size / 1000) + "K" + std::to_string(cluster) + "C.dat";
+				pointsF = generateNormalPoints<float>(cluster, clusterRadius, size, dimension, lowerBound, upperBound, fileName);
+                //save(fileName, pointsF);
+                fileName = "../../data/dataFU" + std::to_string(dimension) + "D" + std::to_string(size / 1000) + "K" + std::to_string(cluster) + "C.dat";
+				pointsF = generateUniformPoints<float>(cluster, clusterRadius, size, dimension, lowerBound, upperBound, fileName);
+                //save(fileName, pointsF);
+            }
+        }
+    }
+
+	/*if (useDouble)
 	{
 		std::vector< std::vector<double> > points;
 		if (clustersCount == 0)
@@ -262,6 +325,6 @@ int main(int argc, const char* argv[])
 				: generateUniformPoints<float>(clustersCount, clusterRadius, pointsCount, dimensions, lowerBound, upperBound);
 		}
 		textOutput ? saveText(outputFileName, points) : save(outputFileName, points);
-	}
+	}*/
 
 }

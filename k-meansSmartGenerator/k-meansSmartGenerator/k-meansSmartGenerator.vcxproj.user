@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-p 1000 -d 2 -o ../../data/test2D.dat -c 3 -r 3.0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-p 16384 -d 128 -o ../../data/test128D16K32C.dat -c 32 -r 5.0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
