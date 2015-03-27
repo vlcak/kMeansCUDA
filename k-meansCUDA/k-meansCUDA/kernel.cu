@@ -23,6 +23,7 @@ typedef unsigned char cluster_t;
 
 cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
+cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
 cudaError_t countKMeansFewMeansV2(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension);
@@ -76,7 +77,7 @@ __global__ void countNewMeansKernel(uint32_t* assignedClusters, const uint32_t d
     test[id] = count;
 }
 
-__global__ void findNearestClusterAtomicKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+__global__ void findNearestClusterAtomicKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
     int id = threadIdx.x + blockIdx.x * blockDim.x;
     value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
@@ -95,12 +96,15 @@ __global__ void findNearestClusterAtomicKernel(const uint32_t meansSize, const v
             clusterID = i;
         }
     }
-    atomicInc(&counts[clusterID], INT32_MAX);
-    assignedClusters[id] = clusterID;
-    for (size_t j = 0; j < dimension; ++j)
-    {
-        atomicAdd(&measnSums[clusterID * dimension + j], data[id * dimension + j]);
-    }
+	if (id + dataOffset < totalDataSize)
+	{
+		atomicInc(&counts[clusterID], INT32_MAX);
+		//assignedClusters[id] = clusterID;
+		for (size_t j = 0; j < dimension; ++j)
+		{
+			atomicAdd(&measnSums[clusterID * dimension + j], data[id * dimension + j]);
+		}
+	}
 }
 
 __global__ void countDivMeansKernel(const uint32_t meansSize, const uint32_t* counts, value_t* means, const value_t* meansSums, const uint32_t dimension)
@@ -534,8 +538,13 @@ int main(int argc, const char* argv[])
 	if (argc == 6)
 	{
 		std::string file_name(argv[1]);
-		std::string means_file_name(argv[2]);
-		std::string clusters_file_name(argv[3]);
+		std::string means_file_name = file_name;//(argv[2]);
+		std::string clusters_file_name = file_name;// (argv[3]);
+		int dataPos = file_name.find_last_of("/") + 1;
+		means_file_name.erase(0, dataPos + std::string("data").length());
+		means_file_name.insert(0, "means");
+		clusters_file_name.erase(0, dataPos + std::string("data").length());
+		clusters_file_name.insert(0, "cluster");
 		std::string s_k(argv[4]);
 		std::string s_iterations(argv[5]);
 		uint32_t k = lexical_cast<uint32_t>(s_k);
@@ -548,7 +557,7 @@ int main(int argc, const char* argv[])
 		memcpy(means, data, k * dimension * sizeof(value_t));
 
 		// Add vectors in parallel.
-        cudaError_t cudaStatus = countKMeansFewMeansV3(iterations, dataSize, data, k, means, assignedClusters, dimension);
+		cudaError_t cudaStatus = countKMeansBIGDataAtomic(iterations, dataSize, data, k, means, assignedClusters, dimension);
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "addWithCuda failed!");
 			return 1;
@@ -693,9 +702,145 @@ Error:
 
 cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
 {
-    value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
+	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
+	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+	cudaError_t cudaStatus;
+
+	clock_t start, end;
+	start = clock();
+
+	//std::vector<uint32_t> testVector(meansSize);
+
+	// Choose which GPU to run on, change this on a multi-GPU system.
+	cudaStatus = cudaSetDevice(0);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+		goto Error;
+	}
+
+	// Allocate GPU buffers for three vectors (two input, one output)    .
+	cudaStatus = cudaMalloc((void**)&dev_means, meansSize * dimension * sizeof(value_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+
+	cudaStatus = cudaMalloc((void**)&dev_meansSums, meansSize * dimension * sizeof(value_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+	else
+	{
+		cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
+	}
+
+	cudaStatus = cudaMalloc((void**)&dev_data, dataSize * dimension * sizeof(value_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+
+	cudaStatus = cudaMalloc((void**)&dev_assignedClusters, dataSize * sizeof(uint32_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+
+	cudaStatus = cudaMalloc((void**)&dev_counts, meansSize * sizeof(uint32_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+	else
+	{
+		cudaMemset(dev_counts, 0, meansSize * sizeof(uint32_t));
+	}
+
+	// Copy input vectors from host memory to GPU buffers.
+	cudaStatus = cudaMemcpy(dev_means, means, meansSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMemcpy failed!");
+		goto Error;
+	}
+
+	cudaStatus = cudaMemcpy(dev_data, data, dataSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMemcpy failed!");
+		goto Error;
+	}
+
+	//uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
+	//value_t* testMeans = (value_t*)calloc(meansSize * dimension , sizeof(value_t));
+
+	// Launch a kernel on the GPU with one thread for each element.
+	int blockSizeN = 32;
+	int nBlocksN = (dataSize - 1) / blockSizeN + 1;
+	//int blockSizeM = 16;
+	//int nBlocksM = (meansSize - 1) / blockSizeM + 1;
+	for (uint32_t i = 0; i < iterations; ++i)
+	{
+		findNearestClusterAtomicKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dimension, 0, dataSize);
+		cudaDeviceSynchronize();
+		countDivMeansKernel << <meansSize, dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension);
+		cudaDeviceSynchronize();
+
+		cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
+		cudaMemset(dev_counts, 0, meansSize * sizeof(uint32_t));
+	}
+
+	// Check for any errors launching the kernel
+	cudaStatus = cudaGetLastError();
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
+		goto Error;
+	}
+
+	// cudaDeviceSynchronize waits for the kernel to finish, and returns
+	// any errors encountered during the launch.
+	cudaStatus = cudaDeviceSynchronize();
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
+		goto Error;
+	}
+
+	cudaStatus = cudaMemcpy(means, dev_means, meansSize * dimension * sizeof(value_t), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMemcpy failed!");
+		goto Error;
+	}
+
+	cudaStatus = cudaMemcpy(assignedClusters, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMemcpy failed!");
+		goto Error;
+	}
+
+
+
+Error:
+	cudaFree(dev_data);
+	cudaFree(dev_means);
+	cudaFree(dev_meansSums);
+	cudaFree(dev_assignedClusters);
+	cudaFree(dev_counts);
+
+
+	end = clock();
+	std::cout << "Time required for execution: "
+		<< (double)(end - start) / CLOCKS_PER_SEC
+		<< " seconds." << "\n\n";
+
+	return cudaStatus;
+}
+
+cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+{
+    value_t* dev_means = 0, *dev_data1 = 0, *dev_data2 = 0, *dev_meansSums = 0, *dev_temp = 0;
     uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
     cudaError_t cudaStatus;
+	uint32_t dataPartSize, dataPartsCount, availableDataMem;
+	size_t freeMem, totMem;
 
     clock_t start, end;
     start = clock();
@@ -708,8 +853,22 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
         goto Error;
     }
+	cudaMemGetInfo(&freeMem, &totMem);
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
+	availableDataMem = totMem - sizeof(value_t)* dimension * meansSize * 2 - sizeof(uint32_t) * meansSize;
+	if (availableDataMem < dataSize * dimension * sizeof(value_t))
+	{
+		// data size / (half of availavle memory)
+		dataPartsCount = (uint32_t)ceil((sizeof(value_t) * dimension * dataSize) / (0.5 * availableDataMem));
+		dataPartSize = (uint32_t)ceil(dataSize / (float)dataPartsCount);
+	}
+	else
+	{
+		dataPartsCount = 1;
+		dataPartSize = dataSize;
+	}
+
+    // Allocate GPU buffers for means and means sumes.
     cudaStatus = cudaMalloc((void**)&dev_means, meansSize * dimension * sizeof(value_t));
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMalloc failed!");
@@ -726,17 +885,24 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
         cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
     }
 
-    cudaStatus = cudaMalloc((void**)&dev_data, dataSize * dimension * sizeof(value_t));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+	// Allocate GPU buffers for data.
+	cudaStatus = cudaMalloc((void**)&dev_data1, dataPartSize * dimension * sizeof(value_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
+	// Allocate GPU buffers for data.
+	cudaStatus = cudaMalloc((void**)&dev_data2, dataPartSize * dimension * sizeof(value_t));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+		goto Error;
+	}
 
-    cudaStatus = cudaMalloc((void**)&dev_assignedClusters, dataSize * sizeof(uint32_t));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+    //cudaStatus = cudaMalloc((void**)&dev_assignedClusters, dataSize * sizeof(uint32_t));
+    //if (cudaStatus != cudaSuccess) {
+    //    fprintf(stderr, "cudaMalloc failed!");
+    //    goto Error;
+    //}
 
     cudaStatus = cudaMalloc((void**)&dev_counts, meansSize * sizeof(uint32_t));
     if (cudaStatus != cudaSuccess) {
@@ -755,26 +921,42 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
         goto Error;
     }
 
-    cudaStatus = cudaMemcpy(dev_data, data, dataSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+	cudaStatus = cudaMemcpy(dev_data1, data, dataPartSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
 
-    //uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
+    uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
     //value_t* testMeans = (value_t*)calloc(meansSize * dimension , sizeof(value_t));
 
     // Launch a kernel on the GPU with one thread for each element.
     int blockSizeN = 32;
-    int nBlocksN = (dataSize - 1) / blockSizeN + 1;
+    int nBlocksN = (dataPartSize - 1) / blockSizeN + 1;
     //int blockSizeM = 16;
     //int nBlocksM = (meansSize - 1) / blockSizeM + 1;
     for (uint32_t i = 0; i < iterations; ++i)
     {
-        findNearestClusterAtomicKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
-        cudaDeviceSynchronize();
+		for (size_t j = 0; j < dataPartsCount; ++j)
+		{
+			cudaMemcpyAsync(dev_data2, data + ((j + 1) % dataPartsCount) * dataPartSize * dimension, dataPartSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
+			findNearestClusterAtomicKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataPartSize, dev_data1, dev_counts, dimension, dataPartsCount * j, dataSize);
+			cudaDeviceSynchronize();
+			cudaStatus = cudaGetLastError();
+			std::swap(dev_data1, dev_data2);
+		}
+		//cudaMemcpy(test, dev_counts, sizeof(uint32_t)* meansSize, cudaMemcpyDeviceToHost);
+		//std::vector<uint32_t> t(test, test + meansSize);
+		//uint32_t cSum = 0;
+		//for (size_t i = 0; i < t.size(); i++)
+		//{
+		//	cSum += t[i];
+		//}
+
+		//cudaStatus = cudaGetLastError();
         countDivMeansKernel << <meansSize, dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension);
-        cudaDeviceSynchronize();
+		cudaDeviceSynchronize();
+		//cudaStatus = cudaGetLastError();
 
         cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
         cudaMemset(dev_counts, 0, meansSize * sizeof(uint32_t));
@@ -810,10 +992,11 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
 
 
 Error:
-    cudaFree(dev_data);
+	cudaFree(dev_data1);
+	cudaFree(dev_data2);
     cudaFree(dev_means);
     cudaFree(dev_meansSums);
-    cudaFree(dev_assignedClusters);
+    //cudaFree(dev_assignedClusters);
     cudaFree(dev_counts);
 
 
