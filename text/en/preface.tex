@@ -1,11 +1,20 @@
 \chapter{Introduction}
 
-In this thesis, we deal with parallelization of speeding up cluster analysis and dependency between input data properties and different approaches to parallelization.
-The main motivation for choosing this topic was not very widespread use of graphics cards whose performance with each generation increases rapidly. We want to use this potential to accelerate the current algorithmic problems, which are very compute-intensive. Such problems include the right cluster analysis, which has a very broad scope of application so it is very useful to accelerate it using the most modern hardware.
+In this thesis, we deal with parallelization of speeding up cluster analysis and dependency between input data properties and different approaches to parallelization.\\
+The main motivations for choosing this topic was not very widespread use of graphics cards for general-purpose computing (GPGPU). Their performance with each generation increases rapidly so they are great opportunity for making current compute-intensive algorithmic problems efficient and less time-consuming and make them usable for areas in which their application was inefficient or even not possible.\\
+As a representative of such problems we chose cluster analysis, which has a very broad scope of application and it is very time consuming for big data so it is really useful to accelerate it using the most modern hardware.
 
 \section{Cluster Analysis} \label{sec:clusteranalysis}
 Cluster analysis is a task that assigns a group to each object from the input set so that each group consists of objects with similar properties. Similar means that same property of two objects differs minimally in comparsion to same property of other objects. This means that each cluster contains objects that are more similar than objects from other groups. Hence the cluster analysis may be performed only on sets of objects of which must each be described by the same set of properties. This analysis has a wide range of applications, such as data mining, pattern recognition, machine learning, and many more.\\
-Cluster analysis itself is only a task to be solved, not a concrete algorithm. There are many ways to solve this task, but they differ significantly in defining what cluster is and in cluster search efficiency. Most commonly definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or particular statistical distribution.\\
+Cluster analysis itself is only a task to be solved, not a concrete algorithm. There are many ways to solve this task, but they differ significantly in defining what cluster is and in cluster search efficiency. Most commonly definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or each particular statistical distribution.\\
+As a distance we take a metric function $d:M\times M \to \mathbb{R}$ fulfilling following rules:\\ \\
+$ \forall  a,b,c \in M$
+\begin{enumerate}
+\item $d(a,b)\geq 0$ \textit{(non-negativity)}
+\item $d(a,b) = 0 \iff a = b$ \textit{(identity)}
+\item $d(a,b) = d(b,a)$ \textit{(symmetry)}
+\item$d(a,b) \leq d(a,c) + d(c,b)$ \textit{(triangle inequality)}
+\end{enumerate}
 There are also two types of cluster organization. One way is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them or non-hierarchical clusters, which creates system where clusters are disjoint sets. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
 
 \section{Cluster Models and Algorithms} \label{sec:clustermodels}
@@ -17,8 +26,8 @@ Because all of these algorithms counts distance, appropriate metric must be used
 \item[Manhattan distance $L_1$] $$\|a-b\|_1=\sum_i |a_i - b_i| $$
 \item[Euclidian distance $L_2$] $$\|a-b\|_2=\sqrt{\sum_i (a_i - b_i)^2 }$$
 \item[Squared Euclidian distance $L_2^2$] $$\|a-b\|_2^2=\sum_i (a_i - b_i)^2 $$
-\item[$p$-norm distance $L_p$] $$\|a-b\|_p=(\sum_i |a_i - b_i|^p)^\frac{1}{p} $$
-\item[Maximum distance $L_\infty$] $$\|a-b\|_\infty=\lim_{p\to\infty}(\sum_i |a_i - b_i|^p)^\frac{1}{p}=\max_i |a_i - b_i| $$
+\item[$p$-norm distance $L_p$] $$\|a-b\|_p=\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p} $$
+\item[Maximum distance $L_\infty$] $$\|a-b\|_\infty=\lim_{p\to\infty}\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p}=\max_i |a_i - b_i| $$
 \end{description}
 All of these methods are only applicable for numeric data, so for other types, different metrics must be used (for example, Levenshtein for text, Mahalanobis for distance between point and distribution).
 \\
@@ -51,7 +60,7 @@ Other problem is the selection of linkage criterion, because cluster consists of
 \item[Minimum energy clustering] $$\frac{2}{nm}\sum_{i,j=1}^{n,m}\|a_i-b_j\|_2-\frac{1}{n^2}\sum_{i,j=1}^{n}\|a_i-a_j\|_2-\frac{1}{m^2}\sum_{i,j=1}^{m}\|b_{i}-b_{j}\|_{2}$$
 \end{description}
 
-These methods are not resistive for extreme objects, which cause generating new clusters or even merging others. These methods has generally $O(n^3)$ complexity so they are slow for large amount of data. There exist optimization for special cases which has only complexity $O(n^2)$. These methods are taken as obsolete.
+These methods are not resistive for extreme objects, which cause generating new clusters or even merging others. Methods has generally $O(n^3)$ complexity so they are slow for large amount of data. There exist optimization for special cases which has only complexity $O(n^2)$. These methods are taken as obsolete.
 
 \item[Density-Based Clusters] Clusters are dense regions of objects. They are separated by low-density regions. This method is useful when some noise is present because the low-density regions will cover them and clusters will not change.~\autoref{fig:densityClusters} \\
 Clusters in \textbf{Density-based clustering} are defined as areas with higher density of objects than in the rest of input data. Standalone objects are taken as noise. One of the most popular method is \textit{DBSCAN}. It is similar to contiguity-based clustering, because it connecting points based on the distance, but it only connects points satisfying density criterion. This means that in neighborhood specified by distance must be a minimum number of objects. These objects are called core objects and form the basis of cluster. Than objects which do not satisfy the density criterion but are close enough to at least one point from the cluster are added to cluster too.\\
@@ -113,16 +122,17 @@ Because of special demands of this model, special algorithms are needed so we co
 \caption{Typical cluster models}
 \end{figure}
 
-We can also divide clustering algorithms by relationship type:
+\vspace{8 mm}
+\noindent
+There is also another option for splitting clustering algorithms by type of objects relationship: 
 
 \begin{description}
 \item[Strict partitioning clustering] Objects belongs exactly into one cluster
-\item[Strict partitioning clustering with outliers] Same as \textit{\textbf{strict partitioning clustering}} but object can be also unassigned. 
+\item[Strict partitioning clustering with outliers] Same as \textit{\textbf{strict partitioning clustering}} but isolated objects can be also unassigned. 
 \item[Overlapping clustering] Object may belong to multiple clusters and we can specify, how much object belong to each cluster for example in percent.
 \item[Hierarchical clustering] Object belongs also into parent clusters.
 \end{description}
-
-\section{Clustering Algorithms} \label{sec:clusteringAlgorithms}
- 
-\section{GPU parallelization}
+ \pagebreak
+\section{General-Purpose Computing on Graphics Processing Units}
+General-Purpose computing on graphics processing unit (GPGPU) is the use of graphics processing unit (GPU) and central processing unit (CPU) together for acceleration data-intensive or compute-intensive tasks. Main advantage of GPUs is that in comparison with ordinary CPU, they have ten times, a hundred times but sometimes thousand times more cores, so if the task is parallelisable, it could be accelerated up to thousand times on GPU in comparison to serial CPU version. At the beginning, GPUs support only computation of vectors or matrices, usually two, three or four dimensional for graphical purposes, so general purpose computation must be reformulated to this graphical principles supported by major graphics APIs like DirectX or OpenGL. Later, Nvidia CUDA tehnology solve this problem and allows to programmer to ignore graphics environment, but it is not vendor independent, CUDA works only on Nvidia GPUs, There is also vendor independent solution OpenCL, but it is not so good for high performance computing as CUDA because of wide range of covered devices so it could not use architecture and hardware specific properties.
 \subsection{Compute Unified Device Architecture (CUDA)}
