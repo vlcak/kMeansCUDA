@@ -1,3 +1,6 @@
+\pagestyle{plain}
+\setcounter{page}{1}
+
 \chapter{Introduction}
 
 In this thesis, we deal with parallelization of speeding up cluster analysis and dependency between input data properties and different approaches to parallelization.\\
@@ -83,39 +86,39 @@ Because of special demands of this model, special algorithms are needed so we co
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/wellSeparatedObjects.png}
+  \includegraphics[width=.5\linewidth]{img/wellSeparatedObjects.eps}
   \caption{Well sepatated objects}
   \label{fig:wellSeparatedObjects}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/centerBasedClusters.png}
+  \includegraphics[width=.5\linewidth]{img/centerBasedClusters.eps}
   \caption{Center-Based Clusters}
   \label{fig:centerBasedClusters}
 \end{subfigure}%
 \vspace*{0.5cm} 
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/contiguousClusters.png}
+  \includegraphics[width=.5\linewidth]{img/contiguousClusters.eps}
   \caption{Contiguous Clusters}
   \label{fig:contiguousClusters}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/densityClusters.png}
+  \includegraphics[width=.5\linewidth]{img/densityClusters.eps}
   \caption{Density-Based Clusters (Gray squares represent noise)}
   \label{fig:densityClusters}
 \end{subfigure}%
 \vspace*{0.5cm} 
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/conceptualClusters.png}
+  \includegraphics[width=.5\linewidth]{img/conceptualClusters.eps}
   \caption{Conceptual Clusters (Points in cluster have y-coordinate from specific range, omitting x-coordinate)}
   \label{fig:conceptualClusters}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/graphClusters.png}
+  \includegraphics[width=.5\linewidth]{img/graphClusters.eps}
   \caption{Graph-Based Clusters}
   \label{fig:graphClusters}
 \end{subfigure}%
@@ -134,5 +137,23 @@ There is also another option for splitting clustering algorithms by type of obje
 \end{description}
  \pagebreak
 \section{General-Purpose Computing on Graphics Processing Units}
-General-Purpose computing on graphics processing unit (GPGPU) is the use of graphics processing unit (GPU) and central processing unit (CPU) together for acceleration data-intensive or compute-intensive tasks. Main advantage of GPUs is that in comparison with ordinary CPU, they have ten times, a hundred times but sometimes thousand times more cores, so if the task is parallelisable, it could be accelerated up to thousand times on GPU in comparison to serial CPU version. At the beginning, GPUs support only computation of vectors or matrices, usually two, three or four dimensional for graphical purposes, so general purpose computation must be reformulated to this graphical principles supported by major graphics APIs like DirectX or OpenGL. Later, Nvidia CUDA tehnology solve this problem and allows to programmer to ignore graphics environment, but it is not vendor independent, CUDA works only on Nvidia GPUs, There is also vendor independent solution OpenCL, but it is not so good for high performance computing as CUDA because of wide range of covered devices so it could not use architecture and hardware specific properties.
+General-Purpose computing on graphics processing unit (GPGPU) is the use of graphics processing unit (GPU) and central processing unit (CPU) together for acceleration data-intensive or compute-intensive tasks. Main advantage of GPUs is that in comparison with ordinary CPU, they have ten times, a hundred times but sometimes thousand times more cores, so if the task is parallelisable, it could be accelerated up to thousand times on GPU in comparison to serial CPU version. At the beginning, GPUs support only computation of vectors or matrices, usually two, three or four dimensional for graphical purposes, so general purpose computation had to be reformulated to this graphical principles supported by major graphics APIs like DirectX or OpenGL. Later, Nvidia CUDA and OpenCL frameworks solve this problem and allows to programmer to ignore graphics environment. Main difference between this two frameworks is that CUDA is only for Nvidia graphics cards so it could use concrete hardware specific properties. OpenCL is a universal vendor independent framework for parallel computations and can be run on wide range of devices like GPUs and CPUs, but , but it is not so good for high performance computing as CUDA because of wide range of covered devices so it could not use architecture and hardware specific properties.
+\subsection{GPU and CPU comparsion} \label{ssec:gpucpucomparsion}
+Main difference between CPU and GPU is in their specialization. Instead of general purpose of CPUs, GPUs are specialized on graphics, which is easily parallelizable, so GPU architecture is targeted for parallel work. After GPGPU was introduced, problem with GPU specialization was solved and GPUs began to compete with processors. Main differences between CPUs and GPUs are:
+\begin{description}
+\item[Number of cores] CPU has only few physical cores, sometimes virtually doubled. Common home CPUs have a maximum around 8 logical cores, server CPUs could have more, but maximally slightly less than a hundred cores. Compared two that, modern GPUs have around five hundred cores, the best models have around five thousand cores, so they have great potential for parallel tasks.
+\item[Core architecture] GPU cores are specialized for numeric computations, not for general tasks as CPU cores, but because of their specialization, they compute numeric tasks really fast. \item[Threads] Approach to threads is different. CPU can process threads from different tasks at one time, GPU uses Simple Instruction Multiple Thread (SIMT) pattern, which means that multiple threads run on same code. Based on their identification, they could access different data.
+\item[Memory] CPUs use big cache memory for hide latency of memory access so when thread is switched to different core, there is problem witch locally cached data, which are useless on original core and must be re-cached on new core. GPU has only small caches, because most of memory is on device, so context switch can be performed really fast.
+\end{description}
+%\begin{table}
+%\begin{tabular}{|l|l|l|}
+%\cline{1-2}
+%NIC & CPU & GPU \\ \cline{1-2}
+%# cores & Few cores per chip & Many cores per chip \\ \cline{1-2}
+%Specialization & General purpose cores & Cores psecialized for numeric computations \\ \cline{1-2}
+%Threads approach & Processing different threads & SIMT thread processing \\ \cline{1-2}
+%Memory access & Huge caches to reduce memory latency & Huge amount of threads and fast context switch \\ \cline{1-2}
+%\end{tabular}
+%\end{table}
 \subsection{Compute Unified Device Architecture (CUDA)}
+CUDA is parallel computing platform developed by Nvidia. This includes hardware and software architecture integrated on Nvidia graphics cards. There exist more solutions than this one from Nvidia, but CUDA is one of the best for high performance computing. The main advantage over OpenCL and other solutions is a direct link to the hardware, which is not the case of OpenCL, because it supports a large range of harware divergent devices.
