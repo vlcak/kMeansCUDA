@@ -137,13 +137,31 @@ There is also another option for splitting clustering algorithms by type of obje
 \end{description}
  \pagebreak
 \section{General-Purpose Computing on Graphics Processing Units}
-General-Purpose computing on graphics processing unit (GPGPU) is the use of graphics processing unit (GPU) and central processing unit (CPU) together for acceleration data-intensive or compute-intensive tasks. Main advantage of GPUs is that in comparison with ordinary CPU, they have ten times, a hundred times but sometimes thousand times more cores, so if the task is parallelisable, it could be accelerated up to thousand times on GPU in comparison to serial CPU version. At the beginning, GPUs support only computation of vectors or matrices, usually two, three or four dimensional for graphical purposes, so general purpose computation had to be reformulated to this graphical principles supported by major graphics APIs like DirectX or OpenGL. Later, Nvidia CUDA and OpenCL frameworks solve this problem and allows to programmer to ignore graphics environment. Main difference between this two frameworks is that CUDA is only for Nvidia graphics cards so it could use concrete hardware specific properties. OpenCL is a universal vendor independent framework for parallel computations and can be run on wide range of devices like GPUs and CPUs, but , but it is not so good for high performance computing as CUDA because of wide range of covered devices so it could not use architecture and hardware specific properties.
-\subsection{GPU and CPU comparsion} \label{ssec:gpucpucomparsion}
+General-Purpose computing on graphics processing unit (GPGPU) is the use of graphics processing unit (GPU) and central processing unit (CPU) together for acceleration data-intensive or compute-intensive tasks. Main advantage of GPUs is that in comparison with ordinary CPU, they have ten times, a hundred times but sometimes thousand times more cores, so if the task is parallelizable, it could be accelerated up to thousand times on GPU in comparison to serial CPU version. At the beginning, GPUs support only computation of vectors or matrices, usually two, three or four dimensional for graphical purposes, so general purpose computation had to be reformulated to this graphical principles supported by major graphics APIs like DirectX or OpenGL. Later, Nvidia CUDA and OpenCL frameworks solve this problem and allows to programmer to ignore graphics environment. Main difference between this two frameworks is that CUDA is only for Nvidia graphics cards so it could use concrete hardware specific properties. OpenCL is a universal vendor independent framework for parallel computations and can be run on wide range of devices like GPUs and CPUs, but , but it is not so good for high performance computing as CUDA because of wide range of covered devices so it could not use architecture and hardware specific properties.
+\subsection{GPU and CPU comparison} \label{ssec:gpucpucomparison}
 Main difference between CPU and GPU is in their specialization. Instead of general purpose of CPUs, GPUs are specialized on graphics, which is easily parallelizable, so GPU architecture is targeted for parallel work. After GPGPU was introduced, problem with GPU specialization was solved and GPUs began to compete with processors. Main differences between CPUs and GPUs are:
 \begin{description}
-\item[Number of cores] CPU has only few physical cores, sometimes virtually doubled. Common home CPUs have a maximum around 8 logical cores, server CPUs could have more, but maximally slightly less than a hundred cores. Compared two that, modern GPUs have around five hundred cores, the best models have around five thousand cores, so they have great potential for parallel tasks.
-\item[Core architecture] GPU cores are specialized for numeric computations, not for general tasks as CPU cores, but because of their specialization, they compute numeric tasks really fast. \item[Threads] Approach to threads is different. CPU can process threads from different tasks at one time, GPU uses Simple Instruction Multiple Thread (SIMT) pattern, which means that multiple threads run on same code. Based on their identification, they could access different data.
+\item[Number of cores] CPU has only few physical cores~\autoref{fig:cpuarchitecture}, sometimes virtually doubled. Common home CPUs have a maximum around 8 logical cores, server CPUs could have more, but maximally slightly less than a hundred cores. Compared two that, modern GPUs have around five hundred cores~\autoref{fig:gpuarchitecture}, the best models have around five thousand cores, so they have great potential for parallel tasks.
+\item[Core architecture] GPU cores are specialized for numeric computations, not for general tasks as CPU cores, but because of their specialization, they compute numeric tasks really fast. \item[Threads] Approach to threads is different. CPU can process threads from different tasks at one time, which is called Simultaneous Multithreading (SMT), GPU uses Simple Instruction Multiple Thread (SIMT) pattern, which means that multiple threads run on same code and based on their identification, they could work on different branches or access different data.
 \item[Memory] CPUs use big cache memory for hide latency of memory access so when thread is switched to different core, there is problem witch locally cached data, which are useless on original core and must be re-cached on new core. GPU has only small caches, because most of memory is on device, so context switch can be performed really fast.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{img/CPUarchitecture.eps}
+  \caption{CPU architecture}
+  \label{fig:cpuarchitecture}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{img/GPUarchitecture.eps}
+  \caption{GPU architecture (Fermi)}
+  \label{fig:gpuarchitecture}
+\end{subfigure}%
+\caption{CPU and GPU architecture comparison}
+\end{figure}
+
 \end{description}
 %\begin{table}
 %\begin{tabular}{|l|l|l|}
@@ -156,4 +174,8 @@ Main difference between CPU and GPU is in their specialization. Instead of gener
 %\end{tabular}
 %\end{table}
 \subsection{Compute Unified Device Architecture (CUDA)}
-CUDA is parallel computing platform developed by Nvidia. This includes hardware and software architecture integrated on Nvidia graphics cards. There exist more solutions than this one from Nvidia, but CUDA is one of the best for high performance computing. The main advantage over OpenCL and other solutions is a direct link to the hardware, which is not the case of OpenCL, because it supports a large range of harware divergent devices.
+CUDA is parallel computing platform developed by Nvidia. This includes hardware and software architecture integrated on Nvidia graphics cards. There exist more solutions than this one from Nvidia, but CUDA is one of the best for high performance computing. The main advantage over OpenCL and other solutions is a direct link to the hardware, which is not the case of OpenCL, because it supports a large range of hardware divergent devices so it can't use concrete hardware advantages. \\
+Nvidia use Simple Instruction Multiple Thread (SIMT) model, which is more flexible than Simple Instruction Multiple Data (SIMD), but generally, it has less performance. Both models approaching parallelism by by broadcasting same instruction to multiple execution units, so only one instruction fetch/decode unit is needed by many execution units. Difference is that SIMT also have multiple register sets and addresses. Main difference is that SIMD processes short vectors in parallel and always all threads do the same work. For example, when we need sum two vectors, SIMD must iterate through vectors and in one step, it can only process as many elements as a computing units count is. On CUDA with SIMT model, we launch as many threads as size of vector and each thread can store values in own register. Not all threads run actually in parallel, but many of them do.\\
+NVIDIA architecture contains larger processors called Symmetric Multiprocessor (SMP). Each SMP contains processor cores with registers (from 32 on Fermi architecture, 128 on Maxwell architecture and 192 on Kepler architecture), load/store units (LD/ST), Special Function Units (SFUs), shared instruction cache, shared memory and data caches. LD/ST and SFUs are shared by groups of cores, size of group depends on architecture.
+
+% is little bit different, because programmer can split execution of instructions into different branches by conditions based on thread identification. In both models
