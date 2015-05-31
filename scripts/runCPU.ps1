@@ -14,7 +14,9 @@ foreach ($data in [System.IO.File]::ReadLines($inputDataFile)) {
 		$arguments = "../data/data" + $data + ".dat " + $name + "/means" + $data + ".dat " + $name +"/clusters" + $data + ".dat " + $clusters + " " + $iterations
 		$tempOutput = $name + "/temp.txt"
 		$output = $name + "/" + $inputDataFile + "times.txt"
+		"=======" + $name + $data + "======="
 		Start-Process -FilePath $line -wait -ArgumentList $arguments -RedirectStandardOutput $tempOutput
+		"Time: " + [System.IO.File]::ReadLines($tempOutput)
 		Get-Content $tempOutput | Out-File $output -Append
 	}
 }
