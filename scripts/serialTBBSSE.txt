@@ -1,0 +1,3 @@
+..\k-means-serial\Release\k-means-serial.exe
+..\k-meansTBB\x64\Debug\k-means.exe
+..\k-meansTBB_SSE\x64\Debug\k-means.exe
