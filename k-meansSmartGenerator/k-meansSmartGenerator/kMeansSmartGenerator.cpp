@@ -273,9 +273,9 @@ int main(int argc, const char* argv[])
     std::string fileName;
 	size_t cluster = 32;
 
-	for (size_t size = 524288; size <= 1048576; size *= 2)
+	for (size_t size = 8192; size <= 1048576; size *= 2)
     {
-        for (size_t dimension = 224; dimension <= 256; dimension = dimension < 32 ? dimension * 2 : dimension + 32)
+        for (size_t dimension = 3; dimension <= 3; dimension = dimension < 32 ? dimension * 2 : dimension + 32)
         {
             //for (size_t cluster = 2; cluster <= 32; cluster *= 2)
             {

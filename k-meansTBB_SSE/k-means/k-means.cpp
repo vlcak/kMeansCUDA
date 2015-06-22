@@ -391,9 +391,8 @@ int main(int argc, const char* argv[])
 		}
 
 		end = clock();
-		std::cout << "Time required for execution: "
-		<< (double)(end-start)/CLOCKS_PER_SEC
-		<< " seconds." << "\n\n";
+		
+		std::cout << (double)(end-start)/CLOCKS_PER_SEC << "\n";
 
 		save_results(means_file_name, clusters_file_name, means, data);
 		return 0;

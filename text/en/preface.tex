@@ -179,7 +179,16 @@ Nvidia use Simple Instruction Multiple Thread (SIMT) model, which is more flexib
 CUDA architecture contains larger processors called \textbf{Symmetric Multiprocessor (SM)}. The oldest is \textbf{SMP} - Fermi~\autoref{fig:smparchitecture}, \textbf{SMX} - Kepler~\autoref{fig:smxarchitecture} and the newest \textbf{SMM} - Maxwell~\autoref{fig:smmarchitecture}. Each SMP contains processor cores with registers (from 32 on Fermi architecture, 128 on Maxwell architecture and 192 on Kepler architecture), load/store units (LD/ST), Special Function Units (SFUs), shared instruction cache, shared memory and data caches. LD/ST and SFUs are shared by groups of cores, size of group depends on architecture.\\
 Versions of CUDA are referred as \textbf{Compute Capability} (CC). This CC describe the device characteristics and a set of instructions that are supported. CC is tightly coupled with architecture (CC 1.x was supported by Tesla architecture, CC 2.x by Fermi, 3.x by Kepler, 5.x by Maxwell).
 
-Parallel programming on CUDA architecture contains two layers of parallelization. The first layer of parallelization is called \textbf{Grid} and it is handled by single GPU chip. Grid consists of blocks which are mapped to Symmetric Multiprocessors, each SM handle one or more \textbf{blocks} but block is never handled by more than one SM. The second layer (Block) consist of \textbf{threads} which runs on cores. The block size could be even bigger than number of cores on SM, than only part of block is run simultaneously. This part is called \textbf{Warp}.\\ Maximum number of currently running blocks and threads in each block depends on architecture, because each architecture has different number of SMs and SM has different number of compute cores. Threads in one block could be executed concurrently or serially and no particular order, but it can be coordinated by synchronizing threads.\\
+\subsubsection{Execution model}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\linewidth]{img/CUDAExecutionModel.eps}
+  \caption{CUDA Execution model}
+  \label{fig:cudaexecmodel}
+\end{figure}%
+
+Parallel programming on CUDA architecture contains two layers of parallelization~\autoref{fig:cudaexecmodel}. The first layer of parallelization is called \textbf{Grid} and it is handled by single GPU chip. Grid consists of blocks which are mapped to Symmetric Multiprocessors, each SM handle one or more \textbf{blocks} but block is never handled by more than one SM. The second layer (Block) consist of \textbf{threads} which runs on cores. The block size could be even bigger than number of cores on SM, than only part of block is run simultaneously. This part is called \textbf{Warp}.\\ Maximum number of currently running blocks and threads in each block depends on architecture, because each architecture has different number of SMs and SM has different number of compute cores. Threads in one block could be executed concurrently or serially and no particular order, but it can be coordinated by synchronizing threads.\\
 
 \begin{figure}[p]
 \centering
@@ -205,12 +214,14 @@ Parallel programming on CUDA architecture contains two layers of parallelization
 \caption{CPU and GPU architecture comparison}
 \end{figure}
 
+\subsubsection{Memory model}
+
 Memory model on CUDA architecture~\autoref{fig:cudamemaccess} contains more types of memory which differs mainly in size, bandwidth and latency.
 \begin{description}
 \item[Global memory] is off the chip, but on the device. It is the largest memory (GBs) and it has high bandwidth (~100 GBps) but high latency (400-600 clock cycles). It is operated in transactions of 32B - 128B and data are cached in L2 cache. Global memory is accessible from all threads.
-\item[Shared memory] is memory is shared by all threads running on same SM. It has lower latency (32 bits / 2 cycles on CC 1.x and 2.x and 64 bits / 1 cycle on 3.x) than Global memory, but it is also smaller (depend on Compute Capability, from 16 kB on 1.x CC to 48kB on 2.x CC and 3.x CC). This memory is divided into banks, each bank could be accessed independently. If there are conflicts, access to bank is serialized (except reading same address which is called broadcast). On CC 1.x and CC 2.x, bank size is 32 bits, on CC 3.0 we can select between 32 bits and 64 bits. Only slow down is read-after write dependency which takes 24 clock cycles, but it could be hidden by 
-\item[L1 Cache] has on most devices similar parameters as Share memory, because it has same resource. We can configure which memory should be preferred and bigger.
-\item[Registers] Each multiprocessor has own register pool. Depend on CC, it has 8-64k of 32-bit registers. registers are the smallest memory, but also has the smallest latency (they are as fast as cores). For programmer, registers are not directly controllable.
+\item[Shared memory] is memory is shared by all threads running on same SM. It has lower latency (32 bits / 2 cycles on CC 1.x and 2.x and 64 bits / 1 cycle on 3.x) than Global memory, but it is also smaller (depend on Compute Capability, from 16 kB on 1.x CC to 48kB on 2.x CC and 3.x CC). This memory is divided into banks, each bank could be accessed independently. If there are conflicts, access to bank is serialized (except reading same address which is called broadcast). On CC 1.x and CC 2.x, bank size is 32 bits, on CC 3.0 we can select between 32 bits and 64 bit banks.
+\item[L1 Cache] has on most devices similar parameters as Share memory, because it has same resource. We can configure which memory should be preferred and bigger. On CC 3.0, L1 cache was merged with texture cache and is independent on shared memory (resources are not shared).
+\item[Registers] Each multiprocessor has own register pool. Depend on CC, it has 8-64k of 32-bit registers. registers are the smallest memory, but also has the smallest latency (they are as fast as cores). For programmer, registers are not directly controllable. Only slow down is read-after write dependency which takes 24 clock cycles, but it could be hidden by enough of active warps.
 \item[Local memory] is memory used only by single thread. Bigger data structures and arrays are stored here because they don't fit into registers. Because of smaller register size, some of registers are deferred in local memory.
 \item[Constant memory] is a special memory for read-only data. Its size is 64kB and from CC 2.x, compiler stores here constant, thread-independent variables.
 \item[Texture memory] is special memory used for graphics. Its main benefit is 2D spatial locality used mainly for textures.
@@ -222,5 +233,7 @@ Memory model on CUDA architecture~\autoref{fig:cudamemaccess} contains more type
   \caption{CUDA Memory access}
   \label{fig:cudamemaccess}
 \end{figure}%
+
+Data transfer between host and device are much slower than on device memory transfers (16/32 GBps depend on PCI Express version, but could be slowed by host memory), which could make CUDA inefficient for small data and compute inexpensive tasks. Transfer call has great overhead so bulk transfers are preferred over individually transfers. Data are copied from host code to device global memory but host memory could be mapped to the host memory space and than data could be accessed directly from device code (but with same, bad latency). Data transfer could be hidden by overlapping data transfer with computing, because CUDA device is capable of computing and simultaneously perform two asynchronous data transfers.
 
 % is little bit different, because programmer can split execution of instructions into different branches by conditions based on thread identification. In both models

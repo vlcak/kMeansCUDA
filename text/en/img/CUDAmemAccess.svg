@@ -26,10 +26,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="380.63369"
+     inkscape:cx="-63.833427"
      inkscape:cy="396.91469"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g12486"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1137"
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,7 +62,7 @@
            height="58.57143"
            width="421.42856"
            id="rect9802" /></flowRegion><flowPara
-         id="flowPara9804"></flowPara></flowRoot>    <flowRoot
+         id="flowPara9804" /></flowRoot>    <flowRoot
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="flowRoot9806"
        xml:space="preserve"><flowRegion
@@ -72,7 +72,7 @@
            height="41.42857"
            width="24.285715"
            id="rect9810" /></flowRegion><flowPara
-         id="flowPara9812"></flowPara></flowRoot>    <rect
+         id="flowPara9812" /></flowRoot>    <rect
        style="fill:#00aad4;fill-opacity:1"
        id="rect11427"
        width="1078.8429"
@@ -861,7 +861,7 @@
            y="108.57799"
            x="723.52417"
            id="tspan10193-8"
-           sodipodi:role="line">Block (0;0)</tspan></text>
+           sodipodi:role="line">Block (1;0)</tspan></text>
       <path
          inkscape:connector-curvature="0"
          id="path10378-1"

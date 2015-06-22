@@ -4,14 +4,14 @@ TBBtimes = read.table("k-meansTBBTimes.dat", sep = ";")
 SSEtimes = read.table("k-meansTBB_SSETimes.dat", sep = ";")
 SerialTimes = read.table("k-means-serialTimes.dat", sep = ";")
 
-index=1
+index=5
 
 dimension=c("2D","4D","8D","16D","32D","64D","96D","128D","160D","192D","224D","256D")
 
 g_range <- range(0, TBBtimes[index], SSEtimes[index], SerialTimes[index])
 
 # Graph cars using a y axis that ranges from 0 to 12
-plot(t(TBBtimes[index]), type="o", col="blue", ylim=g_range, xaxt="n", ann=FALSE)
+plot(TBBtimes[,index], type="o", col="blue", ylim=g_range, xaxt="n", ann=FALSE)
 
 grid()
 
@@ -19,10 +19,10 @@ axis(1, at=1:5, lab=c("8K","16K","32K","65K","131K"))
 box()
 
 # Graph trucks with red dashed line and square points
-lines(t(SSEtimes[index]), type="o", pch=22, lty=2, col="red")
+lines(SSEtimes[,index], type="o", pch=22, lty=2, col="red")
 
 # Graph trucks with red dashed line and square points
-lines(t(SerialTimes[index]), type="o", pch=23, lty=3, col="forestgreen")
+lines(SerialTimes[,index], type="o", pch=23, lty=3, col="forestgreen")
 
 # Create a title with a red, bold/italic font
 
