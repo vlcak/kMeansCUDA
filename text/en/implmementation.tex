@@ -110,4 +110,13 @@ Because both tasks are parallelized by same approach (splitting points to tasks,
 \subsubsection{Vectorization}
 For additional speed-up, we decided to use Simple instruction, multiple data (SIMD) as second layer of parallelization, concretely Streaming SIMD instructions (SSE), which are extension of x86 architecture. These instructions could greatly speed up the computation when exactly the same operations are performed on multiple data objects. Because points are already parallelized by TBB, we use SIMD inductions to parallelize smaller cycles iterating through dimensions, which are very often used in the algorithm. This cycle is usually much smaller (up to number of dimensions) than data but contains only few instructions which is precisely suitable for usage of SSE instructions so the loops will be up to four times faster (depend on number of dimensions) than non-SSE version.
 \subsection{GPU versions}
+For maximum speedup of this algorithm, we implemented versions using GPU, which offers hundreds of cores, so speed up of algorithm should be more than ten times better than parallel CPU version. Because of GPU architecture special features and the wide diversity of the input data, we developed more algorithm versions to reflect this particularities.\\
+Because the GPU compute effectiveness very depends on using different types of memory and the efficiency of its usage, it really depends on algorithm design. This problem is difficult to solve by single algorithm, because we need to use the data input characteristics, which could be the following:
+\begin{description}
+\item[Many dimensions]
+\item[Few means]
+\item[Big data]
+\end{description}
+
+% TOTO add table dataSize x memory fit
 \section{Tools}
