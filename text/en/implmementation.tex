@@ -97,9 +97,17 @@ We reworked program so points are split in groups, each group forming one TBB ta
 \begin{description}
 \item[Assigning to clusters]The first part of algorithm, assigning to clusters~\autoref{lst:kMeansCode},~\autoref{lst:assignToClusters}, is not so problematic, because only write operation is assigning cluster to point. Each point is contained in one and only one TBB task, which is processed by single thread, so it could not be read or written from other threads.\\
 Second possible solution is to split means into groups and parallelize algorithm by tasks containing means. This solution is significantly slower, because we must synchronize writing information to each point about assigned cluster. If we want to remember this information in means (by accumulating assigned points to each mean) we hit a problem, because after assigning point to mean, we could not know if other mean is not closer to processed point so this way o parallelization is too computationally intensive.\\
-The second part of the algorithm, counting new means~\autoref{lst:kMeansCode},~\autoref{lst:computeNewMeans}, is more problematic, because we approach means from different TBB tasks, so accumulating of coordinates must be synchronized. We solved this problem by local copy of means in each TBB task, so we avoided the collisions. For joining tasks, we used TBB reduce algorithm, when to tasks are joined, local arrays of means coordinate sums are correctly added.\\
-Also in this part of algorithm exists second possible solution by approaching parallelization by splitting means. This means that for each mean, we must iterate through all points and accumulate coordinates, which means 
+\item[Compute new means]The second part of the algorithm, counting new means~\autoref{lst:kMeansCode},~\autoref{lst:computeNewMeans}, is more problematic, because we approach means from different TBB tasks, so accumulating of coordinates must be synchronized. We solved this problem by local copy of means in each TBB task, so we avoided the collisions. For joining tasks, we used TBB reduce algorithm, when to tasks are joined, local arrays of means coordinate sums are correctly added.\\
+Also in this part of algorithm exists second possible solution by approaching parallelization by splitting means. This is more compute intensive because in this solution, for each mean, we must iterate through all points and accumulate coordinates but in previous solution, we iterate only through points and than, we join single tasks which takes logarithmic time depends on number of tasks.
 \end{description}
+Because both tasks are parallelized by same approach (splitting points to tasks, not the means), we joined both steps into one~\autoref{fig:computeflow} and gain more speed up because of omitting one start and one finish of TBB parallel task which has big overhead.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\linewidth]{img/computeFlow.eps}
+  \caption{Compute flow}
+  \label{fig:computeflow}
+\end{figure}
 \subsubsection{Vectorization}
+For additional speed-up, we decided to use Simple instruction, multiple data (SIMD) as second layer of parallelization, concretely Streaming SIMD instructions (SSE), which are extension of x86 architecture. These instructions could greatly speed up the computation when exactly the same operations are performed on multiple data objects. Because points are already parallelized by TBB, we use SIMD inductions to parallelize smaller cycles iterating through dimensions, which are very often used in the algorithm. This cycle is usually much smaller (up to number of dimensions) than data but contains only few instructions which is precisely suitable for usage of SSE instructions so the loops will be up to four times faster (depend on number of dimensions) than non-SSE version.
 \subsection{GPU versions}
 \section{Tools}
