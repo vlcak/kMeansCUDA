@@ -109,14 +109,33 @@ Because both tasks are parallelized by same approach (splitting points to tasks,
 \end{figure}
 \subsubsection{Vectorization}
 For additional speed-up, we decided to use Simple instruction, multiple data (SIMD) as second layer of parallelization, concretely Streaming SIMD instructions (SSE), which are extension of x86 architecture. These instructions could greatly speed up the computation when exactly the same operations are performed on multiple data objects. Because points are already parallelized by TBB, we use SIMD inductions to parallelize smaller cycles iterating through dimensions, which are very often used in the algorithm. This cycle is usually much smaller (up to number of dimensions) than data but contains only few instructions which is precisely suitable for usage of SSE instructions so the loops will be up to four times faster (depend on number of dimensions) than non-SSE version.
+\clearpage
 \subsection{GPU versions}
 For maximum speedup of this algorithm, we implemented versions using GPU, which offers hundreds of cores, so speed up of algorithm should be more than ten times better than parallel CPU version. Because of GPU architecture special features and the wide diversity of the input data, we developed more algorithm versions to reflect this particularities.\\
-Because the GPU compute effectiveness very depends on using different types of memory and the efficiency of its usage, it really depends on algorithm design. This problem is difficult to solve by single algorithm, because we need to use the data input characteristics, which could be the following:
+Also on GPU architecture we could divide algorithm to two layer of parallelization, using CUDA characteristics, because work on this platform is divided into blocks and each block is than executed by multiple threads. Because number of threads in single block is significantly bigger than possible count of instructions executed in parallel using SIMD, we decided to use different approach and use the thread layer in same way as the block layer, so both layers parallelize the task in terms of points.
+Because the GPU compute effectiveness very depends on using different types of memory and the efficiency of its usage, it really depends on algorithm design. This problem is difficult to solve by single algorithm, because we need to use the data input characteristics. Here are some possibilities of data variety:
 \begin{description}
-\item[Many dimensions]
-\item[Few means]
-\item[Big data]
+\item[Big data] The first but maybe the biggest problem is the size of points. Because the input data are limited only by computer, so most often by host data storage, it can easily happen that the input data will not fit into the device biggest memory - global memory. Because this problem is also limiting on nonGPU versions, we have only focused on case when data fits in standardly the biggest memory on host - the RAM memory.
+\item[Many dimensions] Other data problem could be many dimensions of the input space. Because basic GPU algorithm works similar as CPU version but without SIMD instructions, each thread in block must iterate through all dimensions which could be done better especially when the input data contains only few points.
+\item[Few means] Opposite data attribute could be only few means. Than we scould make several copies to fill in memory and avoid possible collisions. Problem is that we must join all copies onto so making so many copies is not so efficient.
 \end{description}
 
-% TOTO add table dataSize x memory fit
+The main problem is data size (both points and means) ín compare to memory size. In \autoref{tab:datamemoryfilling} is solution for each case when the appropriate data will not fit to the appropriate memory.
+
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X} 
+\def\tabularxcolumn#1{m{#1}}
+\begin{table}[h]
+\centering
+\caption{Data sizes and memory filling}
+\label{tab:datamemoryfilling}
+\begin{tabularx}{\textwidth}{|r|Y|Y|}
+\cline{1-3}
+\rowcolor[HTML]{AAD400} 
+&Means&Points\\ \cline{1-3}
+{\cellcolor[HTML]{AAD400}} Local memory&We could  share means between threads in Grid and store them in Shared memory.& Points are usually too bigger to fit in Local Memory, if so, we could place them into constant memory.\\ \cline{1-3}
+{\cellcolor[HTML]{AAD400}} Shared memory&If means could not fit into Shared Memory, we could split them into more groups and make more iterations each only with means part.&Points sometimes could fit in Shared memory, if so, we could speed up the computation.\\ \cline{1-3}
+{\cellcolor[HTML]{AAD400}} Global memory&If means does not fit even in Global memory on device, we must iterate through them, but this case usually does not occur.& When points are bigger than Global memory, we must swap appropriate part of them on device.\\ \cline{1-3}
+\end{tabularx}
+\end{table}
+% TODO part kernell unrolling
 \section{Tools}

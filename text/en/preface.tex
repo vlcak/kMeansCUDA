@@ -84,44 +84,44 @@ Because of special demands of this model, special algorithms are needed so we co
 
 \begin{figure}[h]
 \centering
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/wellSeparatedObjects.eps}
   \caption{Well sepatated objects}
   \label{fig:wellSeparatedObjects}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/centerBasedClusters.eps}
   \caption{Center-Based Clusters}
   \label{fig:centerBasedClusters}
-\end{subfigure}%
+\end{subfigure}
 \vspace*{0.5cm} 
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/contiguousClusters.eps}
   \caption{Contiguous Clusters}
   \label{fig:contiguousClusters}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/densityClusters.eps}
   \caption{Density-Based Clusters (Gray squares represent noise)}
   \label{fig:densityClusters}
-\end{subfigure}%
+\end{subfigure}
 \vspace*{0.5cm} 
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/conceptualClusters.eps}
   \caption{Conceptual Clusters (Points in cluster have y-coordinate from specific range, omitting x-coordinate)}
   \label{fig:conceptualClusters}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/graphClusters.eps}
   \caption{Graph-Based Clusters}
   \label{fig:graphClusters}
-\end{subfigure}%
+\end{subfigure}
 \caption{Typical cluster models}
 \end{figure}
 
@@ -152,13 +152,13 @@ Main difference between CPU and GPU is in their specialization. Instead of gener
   \includegraphics[width=.8\linewidth]{img/CPUarchitecture.eps}
   \caption{CPU architecture}
   \label{fig:cpuarchitecture}
-\end{subfigure}%
+\end{subfigure}
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{img/GPUarchitecture.eps}
   \caption{GPU architecture (Fermi)}
   \label{fig:gpuarchitecture}
-\end{subfigure}%
+\end{subfigure}
 \caption{CPU and GPU architecture comparison}
 \end{figure}
 
@@ -186,7 +186,7 @@ Versions of CUDA are referred as \textbf{Compute Capability} (CC). This CC descr
   \includegraphics[width=0.8\linewidth]{img/CUDAExecutionModel.eps}
   \caption{CUDA Execution model}
   \label{fig:cudaexecmodel}
-\end{figure}%
+\end{figure}
 
 Parallel programming on CUDA architecture contains two layers of parallelization~\autoref{fig:cudaexecmodel}. The first layer of parallelization is called \textbf{Grid} and it is handled by single GPU chip. Grid consists of blocks which are mapped to Symmetric Multiprocessors, each SM handle one or more \textbf{blocks} but block is never handled by more than one SM. The second layer (Block) consist of \textbf{threads} which runs on cores. The block size could be even bigger than number of cores on SM, than only part of block is run simultaneously. This part is called \textbf{Warp}.\\ Maximum number of currently running blocks and threads in each block depends on architecture, because each architecture has different number of SMs and SM has different number of compute cores. Threads in one block could be executed concurrently or serially and no particular order, but it can be coordinated by synchronizing threads.\\
 
@@ -197,20 +197,20 @@ Parallel programming on CUDA architecture contains two layers of parallelization
   \includegraphics[width=0.8\linewidth]{img/SMPArchitecture.eps}
   \caption{SMP architecture}
   \label{fig:smparchitecture}
-\end{subfigure}%
+\end{subfigure}
 \begin{subfigure}{0.5\textwidth}
   \centering
   \includegraphics[width=1\linewidth]{img/SMMArchitecture.eps}
   \caption{SMM architecture (Fermi)}
   \label{fig:smmarchitecture}
-\end{subfigure}%
+\end{subfigure}
 \vspace*{0.1cm} 
 \begin{subfigure}{0.6\textwidth}
   \centering
   \includegraphics[width=0.9\linewidth]{img/SMXArchitecture.eps}
   \caption{SMX architecture (Fermi)}
   \label{fig:smxarchitecture}
-\end{subfigure}%
+\end{subfigure}
 \caption{CPU and GPU architecture comparison}
 \end{figure}
 
@@ -232,7 +232,7 @@ Memory model on CUDA architecture~\autoref{fig:cudamemaccess} contains more type
   \includegraphics[width=0.6\linewidth]{img/CUDAmemAccess.eps}
   \caption{CUDA Memory access}
   \label{fig:cudamemaccess}
-\end{figure}%
+\end{figure}
 
 Data transfer between host and device are much slower than on device memory transfers (16/32 GBps depend on PCI Express version, but could be slowed by host memory), which could make CUDA inefficient for small data and compute inexpensive tasks. Transfer call has great overhead so bulk transfers are preferred over individually transfers. Data are copied from host code to device global memory but host memory could be mapped to the host memory space and than data could be accessed directly from device code (but with same, bad latency). Data transfer could be hidden by overlapping data transfer with computing, because CUDA device is capable of computing and simultaneously perform two asynchronous data transfers.
 
