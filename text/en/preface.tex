@@ -22,9 +22,9 @@ There are also problems with data size and memory usage efficiency. GPU has seve
 We must solve this by modification of the k-means algorithm to GPU environment and develop several versions to find out which approach fits the best for concrete type of data.
 
 \chapter{Cluster Analysis} \label{sec:clusteranalysis}
-Cluster analysis is a task that groups objects from the input set so that each group consists of objects with similar properties. Similar means that same property of two objects differs minimally in comparsion to same property of other objects. This means that each cluster contains objects that are more similar than objects from other groups. Hence the cluster analysis may be performed only on sets of objects of which must each be described by the same set of properties. This analysis has a wide range of applications, such as data mining, pattern recognition, machine learning, and many more.\\
-Cluster analysis itself is only a task to be solved, not a concrete algorithm. There are many ways to solve this task, but they differ significantly in defining what cluster is and in cluster search efficiency. Most commonly definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or each particular statistical distribution.\\
-As a distance we take a function $d:M\times M \to \mathbb{R}$ fulfilling following rules:\\ \\
+Cluster analysis is a task that groups objects from the input set so that each group consists of objects with similar properties. Similar means that same property of two objects differs minimally in comparison to same property of other nearest objects or all objects in cluster. This means that each cluster contains objects that are more similar to nearest neighbors or all objects from cluster than objects from other clusters. Hence the cluster analysis may be performed only on sets of objects which must be to each other comparable. This analysis has a wide range of applications, such as data mining, pattern recognition, machine learning, and many more.\\
+Cluster analysis itself is only a task to be solved, not a concrete algorithm. There are many ways to solve this task, but they differ significantly in defining what cluster is and in cluster search efficiency. Most common definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or each particular statistical distribution.\\
+For mathematical definition of the problem, we will take a real vector as an object where each dimension presents an object property. If we consider objects as a set of vectors $M$, distance will be a function $d:M\times M \to \mathbb{R}$ fulfilling metric axioms:\\ \\
 $ \forall  a,b,c \in M$
 \begin{enumerate}
 \item $d(a,b)\geq 0$ \textit{(non-negativity)}
@@ -32,10 +32,17 @@ $ \forall  a,b,c \in M$
 \item $d(a,b) = d(b,a)$ \textit{(symmetry)}
 \item$d(a,b) \leq d(a,c) + d(c,b)$ \textit{(triangle inequality)}
 \end{enumerate}
-There are also two types of cluster organization. One way is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them or non-hierarchical clusters, which creates system where clusters are disjoint sets. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
+
+\section{Cluster organization}
+Object organization into clusters could be done several ways depends on structure of clusters and number of clusters into which an object belongs.
+\begin{description}
+\item[Hard clustering] is clustering, where each object belongs to one and only one cluster. This means that hard clustering creates system where clusters are disjoint sets.
+\item[Fuzzy clustering] assigns objects to clusters too, but difference is that object can belong to more than one cluster. The object membership to cluster could be specified by strength of this membership so object could belongs to cluster more or less based on similarity.
+\item[Hierarchical clustering] is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them so clusters creates structures like n-ary trees. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
+\end{description}
 
 \section{Cluster Models and Algorithms} \label{sec:clustermodels}
-There are so many cluster models and one of the reasons why there exists a large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
+There are many cluster models but in this section, only the best known will be described. One of the reasons why there exists a large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
 
 There exist many clustering algorithms because of many cluster models but there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a subset of models and usually it is weak or not applicable for other models.\\
 Because all of these algorithms counts distance, appropriate metric must be used. Some commonly used metric are:
