@@ -41,11 +41,11 @@ Object organization into clusters could be done several ways depends on structur
 \item[Hierarchical clustering] is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them so clusters creates structures like n-ary trees. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
 \end{description}
 
-\section{Cluster Models and Algorithms} \label{sec:clustermodels}
-There are many cluster models but in this section, only the best known will be described. One of the reasons why there exists a large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
+There are many cluster models but in next section~\ref{sec:clustermodels}, only the best known will be described. One of the reasons why there exists a large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
 
-There exist many clustering algorithms because of many cluster models but there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a subset of models and usually it is weak or not applicable for other models.\\
-Because all of these algorithms counts distance, appropriate metric must be used. Some commonly used metric are:
+\section{Cluster Models and Algorithms} \label{sec:clustermodels}
+There exist many clustering algorithms because of many cluster models. Problem is that there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a subset of models and usually it is weak or not applicable for other models.\\
+Because all of these algorithms counts distance, appropriate metric must be used.
 \begin{description}
 \item[Manhattan distance $L_1$] $$\|a-b\|_1=\sum_i |a_i - b_i| $$
 \item[Euclidian distance $L_2$] $$\|a-b\|_2=\sqrt{\sum_i (a_i - b_i)^2 }$$
@@ -53,9 +53,29 @@ Because all of these algorithms counts distance, appropriate metric must be used
 \item[$p$-norm distance $L_p$] $$\|a-b\|_p=\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p} $$
 \item[Maximum distance $L_\infty$] $$\|a-b\|_\infty=\lim_{p\to\infty}\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p}=\max_i |a_i - b_i| $$
 \end{description}
-All of these methods are only applicable for numeric data, so for other types, different metrics must be used (for example, Levenshtein for text, Mahalanobis for distance between point and distribution).
-\\
-The most typical models of clusters and algorithms are:
+All of these distances are $L_p$ distances and they are applicable on $\mathbb{R^d}$ spaces only. For other types, different metrics must be used.\\
+\subsubsection{Levenshtein distance} Levenshtein distance is used for edit distance between two strings $a, b$ and it is recursively defined by following definition:
+\begin{equation*}
+lev_{a,b}(i,j)=
+\begin{cases}
+max(i,j) & $if $ min(i,j)=0, \cr
+min \begin{cases}
+lev_{a,b}(i-1,j) + 1 \cr
+lev_{a,b}(i,j-1) + 1 \cr
+lev_{a,b}(i-1,j-1) + dif(a_i,b_j)
+\end{cases} & $otherwise$
+\end{cases}
+\end{equation*}
+Where \begin{equation*}
+dif(a_i,b_j)=
+\begin{cases}
+0 & $if $ a_i = b_j, \cr
+1 & $otherwise$
+min 
+\end{cases}
+\end{equation*}
+
+\subsubsection{Mahalanobis distance} $$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
 \begin{description}
 \item[Well-Separated Clusters] Objects are well separated. Cluster is a set of objects such that each object in cluster is closer to objects from its cluster than to objects from other clusters~\autoref{fig:wellSeparatedObjects}. This is the easiest data input and most of algorithms performs well in this case.
 
