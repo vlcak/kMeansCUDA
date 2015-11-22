@@ -40,6 +40,11 @@
 \usepackage{hhline}
 \usepackage{ragged2e}  % for '\RaggedRight' macro (allows hyphenation)
 \usepackage{booktabs}  % for \toprule, \midrule, and \bottomrule macros 
+\usepackage{float}
+
+\floatstyle{plain} % optionally change the style of the new float
+\newfloat{Code}{H}{myc}
+\lstloadlanguages{C++}
 
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
@@ -248,6 +253,8 @@ data mining, cluster analysis, parallelization, GPU, CUDA
 
 %%% Jednotlivé kapitoly práce jsou pro přehlednost uloženy v samostatných souborech
 \include{preface}
+\include{clusterAnalysis}
+\include{GPGPU}
 \include{implmementation}
 \include{results}
 
