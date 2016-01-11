@@ -1,7 +1,10 @@
 \chapter{Cluster Analysis} \label{sec:clusteranalysis}
-Cluster analysis is a task that groups objects from the input set so that each group consists of objects with similar properties. Similar means that same property of two objects differs minimally in comparison to same property of other nearest objects or all objects in cluster. This means that each cluster contains objects that are more similar to nearest neighbors or all objects from cluster than objects from other clusters. Hence the cluster analysis may be performed only on sets of objects which must be to each other comparable. This analysis has a wide range of applications, such as data mining, pattern recognition, machine learning, and many more.\\
-Cluster analysis itself is only a task to be solved, not a concrete algorithm. There are many ways to solve this task, but they differ significantly in defining what cluster is and in cluster search efficiency. Most common definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or each particular statistical distribution.\\
-For mathematical definition of the problem, we will take a real vector as an object where each dimension presents an object property. If we consider objects as a set of vectors $M$, distance will be a function $d:M\times M \to \mathbb{R}$ fulfilling metric axioms:\\ \\
+Cluster analysis is a task that grouping objects from the input set so that each group consists of objects with similar properties. In this context, objects are similar when their properties has same values or differs minimally in comparison to same property of other nearest objects or all objects in cluster. This means that each cluster contains objects that are more similar to nearest neighbors or all objects from cluster than objects from other clusters. Hence the cluster analysis may be performed only on sets of objects which must be to each other comparable - we must be able.to decide how much are two objects similar. This analysis has a wide range of applications, such as data mining, pattern recognition or machine learning.\\
+Cluster analysis itself is a problem to be solved, but there exists many algorithms to solve it. They differ significantly in defining what cluster is and in cluster search efficiency. Most common definitions of the cluster are groups with small distances between the objects from the same cluster, dense areas of the input data, intervals or each particular statistical distribution.\\
+If we want to define cluster analysis more precisely, it is function $f$ which groups objects $o \in O$, where $O$ is input data set and splits them into subsets. We need also the function $s$ which compares two objects and determines, how much are these objects similar $s: O \times O \to \mathbb{R}$.The task is to split items into subsets so the distances between objects from same subset are minimal. $$min \sum_{c=1}^nO_c:\sum_{i,j=1}^{|O_c|}s(o_i,o_j);o_{i,j}\in O_c;\cap_{c=1}^nO_c=O$$
+
+Cluster analysis itself could be performed on many types of data but in this thesis, we will focus mainly on vector spaces so we could define Cluster analysis in following way.
+We will take a real vector as an object where each dimension presents an object property. If we consider objects as a set of vectors $M$, distance will be a function $d:M\times M \to \mathbb{R}$ fulfilling metric axioms:\\ \\
 $ \forall  a,b,c \in M$
 \begin{enumerate}
 \item $d(a,b)\geq 0$ \textit{(non-negativity)}
@@ -10,11 +13,13 @@ $ \forall  a,b,c \in M$
 \item$d(a,b) \leq d(a,c) + d(c,b)$ \textit{(triangle inequality)}
 \end{enumerate}
 
-\section{Cluster organization} \label{sec:clusterorganization}
+The main task is same as in common definition. We need to find a system of subsets so the distances between vectors in one subset is minimal.
+
+\section{Cluster Organization} \label{sec:clusterorganization}
 Object organization into clusters could be done several ways depends on structure of clusters and number of clusters into which an object belongs.
 \begin{description}
 \item[Hard clustering] is clustering, where each object belongs to one and only one cluster. This means that hard clustering creates system where clusters are disjoint sets.
-\item[Fuzzy clustering] assigns objects to clusters too, but difference is that object can belong to more than one cluster. The object membership to cluster could be specified by strength of this membership so object could belongs to cluster more or less based on similarity.
+\item[Fuzzy clustering] assigns objects to clusters too, but difference is that object can belong to more than one cluster. The object membership to cluster could be specified by level of this membership so object could belongs to cluster more or less based on similarity.
 \item[Hierarchical clustering] is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them so clusters creates structures like n-ary trees. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
 \end{description}
 
@@ -23,17 +28,20 @@ There are many cluster models but in next section~\ref{sec:clustermodels}, only 
 \section{Cluster Models and Algorithms} \label{sec:clustermodels}
 There exist many clustering algorithms because of many cluster models. Problem is that there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a subset of models and usually it is weak or not applicable for other models.
 \subsection{Distances}
-Because all of these algorithms counts distance, appropriate metric must be used.
-\begin{description}
-\item[Manhattan distance $L_1$] $$\|a-b\|_1=\sum_i |a_i - b_i| $$
-\item[Euclidian distance $L_2$] $$\|a-b\|_2=\sqrt{\sum_i (a_i - b_i)^2 }$$
-\item[Squared Euclidian distance $L_2^2$] $$\|a-b\|_2^2=\sum_i (a_i - b_i)^2 $$
-\item[$p$-norm distance $L_p$] $$\|a-b\|_p=\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p} $$
-\item[Maximum distance $L_\infty$] $$\|a-b\|_\infty=\lim_{p\to\infty}\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p}=\max_i |a_i - b_i| $$
-\end{description}
-All of these distances are $L_p$ distances and they are applicable on $\mathbb{R^d}$ spaces only. For other types, different metrics must be used.\\
+As we mentioned in the beginning of this section, cluster analysis could be performed on many data types. This variety reflects in wide range on usable distance (or similarity) functions, because specific type of data requires specific metric. Because in this thesis we will deal especially with vector spaces, we will start with general p-norm distance: $$\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|^p} $$
+Most commonly used $L_p$ distance are $L_1$ distance called \textbf{Manhattan distance} or $L_2$ distance called \textbf{Euclidian distance}.
+Because computing roots is difficult, we could simplify the distance by omitting the root computation because this adjustment does not break metric axioms.\\
+%TODO nspsat, že funkce vzdálenosti je pro cluster analysis klíčová a její nalezení často rozhoduje o použitelnosti cluster analysis. nakonec napsat že díky širokým možnostem můžeme cluster analysis použít na široké množství dat.
 
-We could also tak distance functions usable in statistics like \textbf{Mahalanobis distance} and \textbf{Wasserstein metric}
+%Because all of these algorithms counts distance, appropriate metric must be used.
+%\begin{description}
+%\item[Manhattan distance $L_1$] $$\|a-b\|_1=\sum_i |a_i - b_i| $$
+%\item[Euclidian distance $L_2$] $$\|a-b\|_2=\sqrt{\sum_i (a_i - b_i)^2 }$$
+%\item[Squared Euclidian distance $L_2^2$] $$\|a-b\|_2^2=\sum_i (a_i - b_i)^2 $$
+%\item[$p$-norm distance $L_p$] $$\|a-b\|_p=\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p} $$
+%\item[Maximum distance $L_\infty$] $$\|a-b\|_\infty=\lim_{p\to\infty}\Big(\sum_i |a_i - b_i|^p\Big)^\frac{1}{p}=\max_i |a_i - b_i| $$
+%\end{description}
+For other input data types, we give a few examples of non vector spaces. We could take distance functions usable in statistics like \textbf{Mahalanobis distance} and \textbf{Wasserstein metric}
 
 \subsubsection{Mahalanobis distance}
 Is useful if we need to compute distances between a point $P$ and distribution $D$. The main idea of this distance is measuring ho differs $P$ from the mean of $D$.
