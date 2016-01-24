@@ -19,19 +19,20 @@ The main task is same as in common definition. We need to find a system of subse
 Object organization into clusters could be done several ways depends on structure of clusters and number of clusters into which an object belongs.
 \begin{description}
 \item[Hard clustering] is clustering, where each object belongs to one and only one cluster. This means that hard clustering creates system where clusters are disjoint sets.
-\item[Fuzzy clustering] assigns objects to clusters too, but difference is that object can belong to more than one cluster. The object membership to cluster could be specified by level of this membership so object could belongs to cluster more or less based on similarity.
+\item[Fuzzy clustering] assigns objects to clusters too, but difference is that object can belong to more than one cluster. The object membership to cluster could be specified by level or percentage of membership so object could belongs to cluster more or less based on similarity.
 \item[Hierarchical clustering] is hierarchically ordered clusters creates which creates a system of subsets where the intersection of the two is either the empty set or just one of them so clusters creates structures like n-ary trees. Because of complexity of the hierarchical clustering, in this thesis we deal with non-hierarchical type only.
 \end{description}
+For all three types, there exists cluster version which omit isolated objects far from others called outliers. These objects are left unassigned. Because calculation with no strictly assigned objects is to complex and does not bring many advantages, in this thesis we have focused on strict clustering only.\\
 
 There are many cluster models but in next section~\ref{sec:clustermodels}, only the best known will be described. One of the reasons why there exists a large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
 
 \section{Cluster Models and Algorithms} \label{sec:clustermodels}
 There exist many clustering algorithms because of many cluster models. Problem is that there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a subset of models and usually it is weak or not applicable for other models.
+
 \subsection{Distances}
-As we mentioned in the beginning of this section, cluster analysis could be performed on many data types. This variety reflects in wide range on usable distance (or similarity) functions, because specific type of data requires specific metric. Because in this thesis we will deal especially with vector spaces, we will start with general p-norm distance: $$\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|^p} $$
+As we mentioned in the beginning of this section, cluster analysis could be performed on many data types. This variety reflects in wide range on usable distance (or similarity) functions, because specific type of data requires specific metric. Distance function is very important to Cluster analysis because it very often determines whether a cluster analysis is applicable on concrete data type. Because in this thesis we will deal especially with vector spaces, we will start with general p-norm distance applicable on this space: $$\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|^p} $$
 Most commonly used $L_p$ distance are $L_1$ distance called \textbf{Manhattan distance} or $L_2$ distance called \textbf{Euclidian distance}.
 Because computing roots is difficult, we could simplify the distance by omitting the root computation because this adjustment does not break metric axioms.\\
-%TODO nspsat, že funkce vzdálenosti je pro cluster analysis klíčová a její nalezení často rozhoduje o použitelnosti cluster analysis. nakonec napsat že díky širokým možnostem můžeme cluster analysis použít na široké množství dat.
 
 %Because all of these algorithms counts distance, appropriate metric must be used.
 %\begin{description}
@@ -49,7 +50,7 @@ If we have observation $p=(p_1,...,p_n)^T$ a mean of set of observations $\mu=(\
 $$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
 
 \subsubsection{Wasserstein metric}
-Another distance used in statistics is Wasserstein metric (also called Earth mover's distance (EMD))~\cite{Vallender73}. This metric is used for compute distance between two probability distributions on given metric space $M$. There is analogy with moving ``dirt'' piled up in same way as shape of probability distribution. The distance is amount of ``dust'' which must be moved to change the shape of pile into another shape specified by second probability distribution times the distance it has to be moved. This distance is defined by following way:\\
+Another distance used in statistics is Wasserstein metric (also called Earth mover's distance (EMD))~\cite{Vallender73}. This metric is used for compute distance between two probability distributions on given metric space $M$. There is analogy with moving ``earth'' piled up in same way as shape of probability distribution. The distance is amount of ``earth'' which must be moved to change the shape of pile into another shape specified by second probability distribution times the distance it has to be moved. This distance is defined by following way:\\
 Let $X$ be a metric space with metrix $\rho$ and $\mathfrak{B}$ be the $\sigma$-algebra of Borel subsets of $X$. The Wasserstein distance $R(P,Q)$ between probability distributions $P$ and $Q$ on $(X, \mathfrak{B})$ is defined as:
 $$R(P,Q)=\inf\mathbf{E}\rho(\xi, \sigma)$$
 where $\inf$ is taken over all possible pairs of random variables $\xi$ and $\sigma$ with distribution $P$ and $Q$.\\
@@ -73,7 +74,6 @@ dif(a_i,b_j)=
 \begin{cases}
 0 & $if $ a_i = b_j, \cr
 1 & $otherwise$
-min 
 \end{cases}
 \end{equation*}
 
@@ -82,11 +82,12 @@ This metric becomes really useful for comparing multimedia objects, which could 
 Than we do not count distances between the feature signatures but in Signature Quadratic Form Distance~\cite{Beecks10}, the similarity functions are used.
 Mathematically, Signature Quadratic Form Distance (SQFD) is defined for two feature signatures $S^{q} = \{\{c_i^q, w_i^q\}|i=1,...,n\}$ and $S^{o} = \{\{c_i^o, w_i^o\}|i=1,...,m\}$ and a similarity function $f_s(c_i,c_j) \to \mathbb{R}$ as:
 $$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
-where $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ is the similarity matrix generated by applying similarity function $f_s$ to the corresponding centroids ($a_{ij}-f_s(c_i,c_j)$) and operator $|$ means concatenation of two vectors, so $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$
+where $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ is the similarity matrix generated by applying similarity function $f_s$ to the corresponding centroids ($a_{ij}-f_s(c_i,c_j)$) and operator $|$ means concatenation of two vectors, so $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
 
+Because there exists many possibilities in distance functions which covers many data types, cluster analysis has a very wide range of applicability and it is not limited by concrete data types. Because we could not cover all these possibilities in this thesis we focused on vector spaces only.
 
-\subsection{Cluster models}
-Because definitions of cluster differs, there are also many definition of cluster models. In following section, the most known models will be described.
+\subsection{Cluster Models}
+Because there is no uniform definition of cluster, there are also many definition of cluster models. In following section, the most known models will be described.
 
 \begin{figure}[h]
 \centering
@@ -134,68 +135,76 @@ Because definitions of cluster differs, there are also many definition of cluste
 \begin{description}
 \item[Well-Separated Clusters] Objects are easily separable-chunks of objects are not overlapping and split by sparse or empty area. Cluster is a set of objects such that each object in cluster is closer to objects from its cluster than to objects from other clusters~\autoref{fig:wellSeparatedObjects}. This is the easiest data input and most of algorithms performs well in this case.
 
-\item[Center-Based Clusters] Object belongs to cluster if it is closer to the ``center'' of the cluster than ``centers'' of all other clusters.~\autoref{fig:centerBasedClusters} Center of cluster is usually called centroid or mean and it could represents whole cluster. This is good model for algorithms based on distance between object and centroid. \\
-The best algorithm for solving this task is \textit{\textbf{Center-based clustering}} representing clusters as central object, which may not be part of the input data set.  For example \textit{\textbf{k-means}} algorithm takes $k$ centers and than each object is assigned to nearest center. Again, many metrics could be used, but commonly \textit{Euclidian distance} or \textit{Squared Euclidian distance} is used. \textit{\textbf{k-means}} clustering is basically an optimization problem where we looking for $k$ centers so distances will be the lowest possible. Problem is that optimization itself is NP-hard problem, so solution is commonly only approximate solution is searched. Approximation is commonly done by many iterations consist of assigning clusters to objects and  counting new means.
-There are many variants of \textit{\textbf{k-means}} algorithm which will be described later. %TODO add ref too kmeans section
+\item[Centroid-Based Clusters] Object belongs to cluster if it is closer to the centroids of the cluster than centroids of all other clusters~\autoref{fig:centerBasedClusters}. Centroid is special object known before or precomputed. The result is similar to Voronoi space partitioning. Centroid-Based clusters are similar Voronoi cells from Voronoi diagram, where centroids are called seed or generators. This is good model for algorithms based on distance between object and centroid. \\
+One of the algorithm for solving this task is \textit{\textbf{Centroid-based clustering}} representing clusters as central object, which may not be part of the input data set. This clustering is basically an optimization problem where we looking for centroids so distances will be the lowest possible. Problem is that optimization itself is NP-hard problem and the result only approximate the ideal solution. Approximation is commonly done by many iterations consist of assigning clusters to objects and counting new means.
 
-One of the biggest problems of \textit{\textbf{k-means}} algorithms is that the number of clusters must be specified at the beginning. Second problem is that clusters with similar size are used (in term of distance, not number of contained objects). This usually leads to splitting bigger clusters into smaller ones, because algorithm optimize cluster centers, not borders.
-Output of \textit{\textbf{k-means}} like algorithms is usually input data set split in \textit{Voronoi cells} which could be useful for some problems.
+\item[Contiguous Clusters] This model is similar to Center-Based Clusters model but there is difference that two clusters could be merged into single one if they are close enough~\autoref{fig:contiguousClusters}. In other words, object is in cluster if it is similar to one ore more other objects from cluster~\cite{Tan05}.\\
+Main idea of \textbf{Contiguity-based clustering} is that objects that are nearby are more related than objects that are farther, so these algorithms grouping objects based on their distance only. Each cluster can be described by sum of distances or by maximum distance needed to connect objects in cluster. Having these cluster property, they can be easily ordered into hierarchy so parent clusters needs little more distance to connect its objects. This hierarchy could be represented as a dendrogram, which is tree diagram showing cluster hierarchy. Because this property, Contiguity-based clustering could be used for hierarchical clustering but also for hard clustering if we omit the hierarchy.\\
 
-\item[Contiguous Clusters] This model is similar to Center-Based Clusters model but there is difference that two clusters can merge into one. In other words, object is in cluster if it is similar to one ore more other objects from cluster.~\autoref{fig:contiguousClusters}\\
-Main idea of \textbf{Contiguity-based clustering} is that objects that are nearby are more related than objects that are farther, so these algorithms grouping objects based on their distance only. Each cluster can be described by sum of distances or by maximum distance needed to connect objects in cluster. Having these cluster property, they can be easily ordered into hierarchy so parent clusters needs little more distance to connect its objects. This hierarchy could be represented as a dendrogram, which is tree diagram showing cluster hierarchy.\\
-
-Other problem is the selection of linkage criterion, because cluster consists of many objects, there are many choices to compute the distance to. There are several methods for choosing linkage criteria between two sets of objects $A$ and $B$, $d$ is chosen metric:
+The connection of the objects inside cluster could be problematic. Simply, because cluster consists of many objects, there are many choices to compute the distance to. There are several methods for choosing linkage criteria between two sets of objects $A$ and $B$, $d$ is chosen metric:
 \begin{description}
 \item[Maximum or complete linkage clustering] $$\max\{d(a,b) : a \in A, b \in B\}$$
 \item[Minimum or single linkage clustering] $$\min\{d(a,b) : a \in A, b \in B\}$$
 \item[Mean or average linkage clustering, or UPGMA] (Unweighted Pair Group Method with Arithmetic Mean) $$\frac{1}{|A||B|}\sum_{a \in A} \sum_{b \in B} d(a,b)$$
 \item[Centroid linkage clustering, or UPGMC] (Unweighted Pair-Group Method using Centroids) $$\|c_a - c_b\| \mbox{ where } c_a \mbox{ and } c_b \mbox{ are the centroids of clusters } A \mbox{ and } B$$
-\item[Minimum energy clustering] $$\frac{2}{nm}\sum_{i,j=1}^{n,m}\|a_i-b_j\|_2-\frac{1}{n^2}\sum_{i,j=1}^{n}\|a_i-a_j\|_2-\frac{1}{m^2}\sum_{i,j=1}^{m}\|b_{i}-b_{j}\|_{2}$$
+This may look like centroid based clustering but this is only a linkage criteria and the result is hierarchically ordered clusters.
+\item[Minimum energy clustering] $$\frac{2}{|A||B|}\sum_{i,j=1}^{|A|,|B|}\|a_i-b_j\|_2-\frac{1}{n^2}\sum_{i,j=1}^{|A|}\|a_i-a_j\|_2-\frac{1}{|B|^2}\sum_{i,j=1}^{m}\|b_{i}-b_{j}\|_{2} : a \in A, b \in B$$
 \end{description}
 
 These methods are not resistive for extreme objects, which cause generating new clusters or even merging others. Methods has generally $O(n^3)$ complexity so they are slow for large amount of data. There exist optimization for special cases which has only complexity $O(n^2)$. These methods are taken as obsolete.
 
 \item[Density-Based Clusters] Clusters are dense regions of objects. They are separated by low-density regions. This method is useful when some noise is present because the low-density regions will cover them and clusters will not change.~\autoref{fig:densityClusters} \\
 Clusters in \textbf{Density-based clustering} are defined as areas with higher density of objects than in the rest of input data. Standalone objects are taken as noise. One of the most popular method is \textit{DBSCAN}. It is similar to contiguity-based clustering, because it connecting points based on the distance, but it only connects points satisfying density criterion. This means that in neighborhood specified by distance must be a minimum number of objects. These objects are called core objects and form the basis of cluster. Than objects which do not satisfy the density criterion but are close enough to at least one point from the cluster are added to cluster too.\\
-The advantage of this method is its computational modesty, because it require only linear number of range queries. This method is deterministic so there is no need to tun it in iterations.
+The advantage of this method is its computational unpretentiousness, because it require only linear number of range queries. This method is deterministic so there is no need to run it in iterations.
 Drawback of these methods is the $\epsilon$ density parameter so borders of clusters with smaller density could be interpreted as  noise. Also separating nearby clusters may cause problems to these methods.
 
 \item[Distribution models] Clusters in distribution models are objects that belong to same probability distribution. It is possible that one object belongs to more clusters.\\
-In \textbf{Distribution-based clustering}, clusters are defined as objects from the same or similar distribution. This approach basically emulates process of generating the input data and try to reconstruct the lost statistical parameters. Main problem of this typ of clustering is problem known as \textit{overfitting}. This means that more complex model is described by less complex one and the difference between them is marked as deviation or noise. For example 3 points from the neighborhood of parabola vertex will be described by linear function.\\
+In \textbf{Distribution-based clustering}, clusters are defined as objects from the same or similar distribution. This approach basically emulates process of generating the input data and try to reconstruct the lost statistical parameters. Main problem of this clustering model is problem known as \textit{overfitting}. This means that more complex model is described by less complex one and the difference between them is marked as deviation or noise. For example 3 points from the neighborhood of parabola vertex will be described by linear function.\\
 One of methods used in distribution-based clustering is \textit{Gaussian mixture models} where algorithm iteratively optimizing parameters of fixed number of Gaussian distributions.
 Problem is that this method assuming Gaussian distributed data set, but this set may not have even a model.
 
 \item[Conceptual Clusters] Objects in cluster has some properties same or similar, but other properties could differ significantly.~\autoref{fig:conceptualClusters}\\
-As algorithm for Conceptual Clusters, we can use algorithm depends on other model properties and less significant properties of objects could be easily omitted.
+As algorithm for Conceptual Clusters, we can use algorithm depends on other model properties and less significant properties of objects could be easily filtered out.
 
 \item[Graph-Based Models] For example cliques in graphs should represent clusters. Clique is subset of nodes where every two nodes are connected with edge.~\autoref{fig:graphClusters}\\
 Because of special demands of this model, special algorithms are needed so we could use graph algorithms, for example Bron-Kerbosch algorithm for finding cliques. %TODO source!
 \end{description}
 
-Based on cluster organization~\ref{sec:clusterorganization} there is also another option for splitting clustering algorithms by type of objects relationship. Not all types could be used by each cluster model.
+\subsection{K-Means} 
+Clustering algorithms are wide class of algorithms and we could not focused on every clustering model and appropriate algorithm and speed it up by parallelization, because there does not exist any universal approach for speeding up but on the contrary it needs to use every single detail of the algorithm. We want to choose one of the most versatile algorithm so we decided for k-means algorithm for its wide range of usage and undemanding on the properties of the input data.\\
+K-means algorithm~\cite{hartigan1979algorithm,Tan05} is centroid based clustering algorithm. K-means input is set of $n$ points in $d$-dimensional space $R^d$, a number of output clusters $k$ and a optional number of maximum iterations $i$. \\
+The task is to assign points to centroids (centers of clusters) and minimize the distance between cluster's centroid and points assigned to this cluster. Algorithm works iteratively and each iteration consist of two steps. At first step the nearest centroid is found for each point and this point is assigned to centroid's cluster. In the second step, new centroids are computed as a mean of all points assigned to same cluster. Algorithm ends after known number of steps or when nothing changes between two iterations.\\
+Output of the this algorithm are centroids coordinates and points with assigned clusters.
 
-\begin{description}
-\item[Strict partitioning clustering] Objects belongs exactly into one cluster.
-\item[Strict partitioning clustering with outliers] Simillar to \textit{\textbf{strict partitioning clustering}} but isolated objects can be also unassigned. 
-\item[Overlapping clustering] Object may belong to multiple clusters and we can specify, how much object belong to each cluster for example in percent.
-\item[Hierarchical clustering] Object belongs also into parent clusters.
-\end{description}
 
- Because calculation with no strictly assigned objects is to complex and does not bring many advantages, in this thesis we have focused on strict clustering only.\\
- 
- Clustering algorithms are wide class of algorithms so we could not focused one every clustering model and appropriate algorithm and speed it up by parallelization, because there does not exist any universal approach for speeding up but on the contrary it needs to use every single detail of the algorithm. We want to choose one of the most versatile algorithm so we decided for k-means algorithm for its wide range of usage and undemanding on the properties of the input data.\\
-K-means algorithm~\cite{hartigan1979algorithm}, which input is set of $n$ points in $d$-dimensional space $R^d$ a number of output clusters $k$ and a number of maximum iterations $i$. The task is to assign points to centroids (centers of clusters) and minimize the distance between points assigned to one cluster and appropriate centroid. Algorithm works iteratively and each iteration consist of two steps. At first step points are assigned to the nearest centroids and than in the second step, new centroids are computed as a mean of all points assigned to each cluster. Algorithm ends after known number of steps or when nothing changes between two iterations. Output of the this algorithm are centroids coordinates or points with assigned clusters.
+\algdef{SE}[REPEAT]{Repat}{Until}{\algorithmicrepeat}[1]{\algorithmicuntil\ #1}%
+
+\begin{algorithm}
+\caption{K-means}\label{alg:kmeans}
+\begin{algorithmic}[1]
+\State Select K points as the initial centroids
+\Repeat
+\State Make K clusters by assigning all points to the nearest cluster
+\State Update centroid of each cluster
+\Until{centroids do not change or maximum number of iterations reached}
+\end{algorithmic}
+\end{algorithm}
+
+Because at first step we do not know the centroids, usually, the first $k$ points of input set are used as initial centroids. K-means converge fast in first few iterations, so the stopping condition could be changed to ``Until relatively few points change clusters''.~\cite{Tan05}.\\
+The complexity of the computation is $O(n*k*i*d)$, where $n$ is number of input points, $k$ is number of clusters, $i$ is number of iterations and $d$ is dimension of space
+
+\subsubsection{K-Means Variants}
 Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable.
 There also exist few variations:
 \begin{description}
-\item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal. This variant is useful when non-existing mean is unusable.
-\item[k-medians] - same algorithm as k-means, but median is used instead of mean for computing new centroid.
+\item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal (medoid is used instead of mean).
+\item[k-medians] - same algorithm as k-means, but in each dimension, median is used instead of mean for computing new centroid.
 \item[k-means++] - initial centers are chosen randomly. This selection avoid bad inputs.
-\item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster.
+\item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster. The weighted mean (with the degree of belonging as weight) is used for computation new centroids.
 \end{description}
 
-Disadvantages of k-means algorithm is that we need to know the number of output clusters at the beginning and after computation start this number could not be changed. This possibility might be demanded by some type of problems and k-means is inconvenient for them.\\
-Also size of clusters could be problem in some cases because the main goal of k-means is to minimize the distance inside the cluster, we could have input data where one cluster contains many objects and one smaller cluster with only a few objects~\autoref{fig:kmeansbadinput}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutput} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution.
+Disadvantages of k-means algorithm is that we need to know the number of output clusters at the beginning and after computation start this number could not be changed. This possibility might be demanded by some type of problems and k-means is inconvenient for them.\\ 
+Also size of clusters could be problem in some cases because the main goal of k-means is to minimize the distance inside the cluster, we could have input data where one cluster contains many objects and one smaller cluster with only a few objects~\autoref{fig:kmeansbadinput}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutput} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution. %TODO add shape and density problem?
 
 \begin{figure}[h]
 \centering
