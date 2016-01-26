@@ -191,21 +191,24 @@ Output of the this algorithm are centroids coordinates and points with assigned 
 \end{algorithm}
 
 Because at first step we do not know the centroids, usually, the first $k$ points of input set are used as initial centroids. K-means converge fast in first few iterations, so the stopping condition could be changed to ``Until relatively few points change clusters''.~\cite{Tan05}.\\
-The complexity of the computation is $O(n*k*i*d)$, where $n$ is number of input points, $k$ is number of clusters, $i$ is number of iterations and $d$ is dimension of space
+The complexity of the computation is $O(n*k*i*d)$, where $n$ is number of input points, $k$ is number of clusters, $i$ is number of iterations and $d$ is dimension of space.\\
 
-\subsubsection{K-Means Variants}
-Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable.
-There also exist few variations:
+To evaluate k-means output, we need to somehow measure the quality of cluster assignment. For this purpose is most commonly used \textbf{Sum of Squared Error (SSE)} function. Single point error is represented by distance from the centroid of assigned cluster and the function than sums square errors of all points.
+$$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{is centroid of cluster} $O_i$ }$$
+If we had results with bad $SSE$, we could reduce it by increasing number of clusters $k$, but this may not help if initial clusters are chosen badly.
+
+The initial centroids are one of the disadvantages of k-means algorithm because we need to know the number of output clusters at the beginning and after computation start this number could not be changed. This possibility might be demanded by some type of problems and k-means is inconvenient for them. In addition to that, problem is also selecting of initial centroids. Although we choose ideal $k$ for the input data, the probability we chose objects from different clusters as initial points is really small~\cite{Tan05}: $$P = \frac{\mbox{number of ways to select one centroid from each cluster}}{\mbox{number of ways to select K centroids}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ This probability is close to zero even for small $k$, for example for $k=10$, probability is $0.00036$.\\
+There are some ways to solve this problem and pickup better initial points~\cite{Tan05}:
 \begin{description}
-\item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal (medoid is used instead of mean).
-\item[k-medians] - same algorithm as k-means, but in each dimension, median is used instead of mean for computing new centroid.
-\item[k-means++] - initial centers are chosen randomly. This selection avoid bad inputs.
-\item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster. The weighted mean (with the degree of belonging as weight) is used for computation new centroids.
-\end{description}
+\item[multiple runs] k-means algorithm is run multiple times with different initial centroid and the best one is chosen.
+\item[samples] Sample input data with hierarchical clustering and determine initial centroids.
+\item[more centroids] Select more than $k$ centroids and then selects the most widely separated ones.
+\item[postprocessing] Result of the algorithm is postprocessed - Clusters with high $SSE$ could be split and on the other side close clusters with low $SSE$ could be merged.
+\end{description} 
 
-Disadvantages of k-means algorithm is that we need to know the number of output clusters at the beginning and after computation start this number could not be changed. This possibility might be demanded by some type of problems and k-means is inconvenient for them.\\ 
-Also size of clusters could be problem in some cases because the main goal of k-means is to minimize the distance inside the cluster, we could have input data where one cluster contains many objects and one smaller cluster with only a few objects~\autoref{fig:kmeansbadinput}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutput} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution. %TODO add shape and density problem?
+Other problem of k-means is that the basic version could produce empty clusters. This could be solved by algorithm update: when we found empty cluster, we could choose point which contributes most to $SSE$ as centroid instead of empty cluster or we can choose point from the cluster with greatest $SSE$~\cite{Tan05}.
 
+Also if clusters differs significantly in size/density/non-globular shapes~\cite{Tan05}, cluster analysis could be problem for k-means. For example, because the main goal of k-means is to produce similar sized clusters, we will have problem with input data where one big cluster contains many objects and one smaller cluster has only few objects~\autoref{fig:kmeansbadinput}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutput} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution. %TODO add other examples?
 \begin{figure}[h]
 \centering
 \begin{subfigure}{.49\textwidth}
@@ -223,53 +226,14 @@ Also size of clusters could be problem in some cases because the main goal of k-
 \caption{CPU and GPU architecture comparison}
 \end{figure}
 
-\begin{Code}
-    \centering
-\begin{lstlisting}[caption={k-means algorithm}, language=C++, escapeinside={\%*}{*)}, label={lst:kMeansCode}, numbers=left]
-// Assign points to clusters
-%*\label{lst:assignOuterForLoop}*)assign_to_clusters(data, means) {
-//Iterate through data
-%*\label{lst:assignInnerForLoop}*)  for( d = 0; d < data_size; d++) {
-// Iterate through means
-    for( m = 0; m < means_size; m++) {
-      distance = count_distance( data[d], means[m] );
-// If m-cluster is closer, reassign cluster
-      if ( distance < min_distance ) {
-        assigned_cluster = m;
-        min_distance = distance;
-      }
-    }
-    data[d]->assigned_cluster = assigned_cluster;
-  }
-}
-\end{lstlisting}
-    \caption{Code for first step - assigning points to clusters}
-\end{Code}
+These problems could be solved by some variant of k-means algorithm.
 
-If we look closer to k-means algorithm and decompose the first step, we realize that it consist of two nested  loops. First loop~\autoref{lst:assignOuterForLoop} iterates through all objects and than the second one iterates through centroid and looking to nearest one. Parallelization of the first loop is not a problem because we could run a separate thread for each object and determine the nearest centroid, because there are no race conditions. Parallelization of the second loop~\autoref{lst:assignInnerForLoop} is little bit harder but when we have parallel version of minimum function, we are done too.\\
-
-\begin{Code}
-    \centering
-\begin{lstlisting}[caption={k-means algorithm}, language=C++, escapeinside={\%*}{*)}, label={lst:kMeansCode}, numbers=left]
-// Compute new means
-%*\label{lst:computeNewMeans}*)compute_means(data, means) {
-// Iterate through data and accumulate data in appropriate new mean
-  for( d = 0; d < data_size; d++) {
-    assigned_cluster = data[d]->assigned_cluster;
-    new_means[assigned_cluster]->contained_points++;
-    new_means[assigned_cluster]->coordinates +=
-      data[d]->coordinates;
-  }
-  
-// Count new means coordinates (arithmetic mean)
-  for( m = 0; m < means_size; m++) {
-    new_means[m]->coordinates /=
-      new_means[m]->contained_points;
-  }
-}
-\end{lstlisting}
-    \caption{Code for second step - computing new means}
-\end{Code}
-Parallelizing of the second step of the algorithm is harder because there are compute dependencies. We need to compute new centroids which contains to accumulate object assigned to same cluster, This is problem because we could not run thread per each point - accumulating objects could be accessed from different threads and will probably cause corruption of result.
-One possibility is to swap loops and parallelize loop iterating through clusters and avoid described collision because each thread compute one new mean and computation could not be break by another thread. Problem is that parallelization of the object loop ii much bigger and parallelizing it could speed up the computation much more. This could be solved by accumulating objects in thread local variable but than these partial results must be merged into a single one which takes some extra time.
-If we parallelize the bigger loop in second step we could merge both steps into single one and accumulate newly assigned objects into thread local variables and get some more speed improvement.
+\subsubsection{K-Means Variants}
+Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable.
+There also exist few variations:
+\begin{description}
+\item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal (medoid is used instead of mean).
+\item[k-medians] - same algorithm as k-means, but in each dimension, median is used instead of mean for computing new centroid.
+\item[k-means++] - initial centers are chosen randomly. This selection avoid bad inputs.
+\item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster. The weighted mean (with the degree of belonging as weight) is used for computation new centroids.
+\end{description}
