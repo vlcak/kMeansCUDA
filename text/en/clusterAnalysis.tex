@@ -208,22 +208,40 @@ There are some ways to solve this problem and pickup better initial points~\cite
 
 Other problem of k-means is that the basic version could produce empty clusters. This could be solved by algorithm update: when we found empty cluster, we could choose point which contributes most to $SSE$ as centroid instead of empty cluster or we can choose point from the cluster with greatest $SSE$~\cite{Tan05}.
 
-Also if clusters differs significantly in size/density/non-globular shapes~\cite{Tan05}, cluster analysis could be problem for k-means. For example, because the main goal of k-means is to produce similar sized clusters, we will have problem with input data where one big cluster contains many objects and one smaller cluster has only few objects~\autoref{fig:kmeansbadinput}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutput} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution. %TODO add other examples?
+Also if clusters differs significantly in size/density/non-globular shapes~\cite{Tan05}, cluster analysis could be problem for k-means\\
+For example, because the main goal of k-means is to produce similar sized clusters, we will have problem with input data where one big cluster contains many objects and one smaller cluster has only few objects~\autoref{fig:kmeansbadinputsize}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutputsize} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution.%TODO add other examples?
 \begin{figure}[h]
 \centering
 \begin{subfigure}{.49\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/kmeans_badsample1.eps}
+  \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleSize.eps}
   \caption{Input data (assigned to clusters only for demonstration)}
-  \label{fig:kmeansbadinput}
+  \label{fig:kmeansbadinputsize}
 \end{subfigure}
 \begin{subfigure}{.49\textwidth}
   \centering
-  \includegraphics[width=.5\linewidth]{img/kmeans_badsample2.eps}
+  \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleSize.eps}
   \caption{k-means output}
-  \label{fig:kmeansbadoutput}
+  \label{fig:kmeansbadoutputsize}
 \end{subfigure}
-\caption{CPU and GPU architecture comparison}
+\caption{K-means bad sized samples}
+\end{figure}
+
+Second problem is caused by cluster density. When we have some close dense clusters and cluster signle sparse cluster~\autoref{fig:kmeansbadinputdensity}, k-menas usually mark dense clusters as one and split sparse cluster into multiple clusters.~\autoref{fig:kmeansbadoutputdensity}
+\begin{figure}[h]
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleDensity.eps}
+  \caption{Input data (assigned to clusters only for demonstration)}
+  \label{fig:kmeansbadinputdensity}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleDensity.eps}
+  \caption{k-means output}
+  \label{fig:kmeansbadoutputdensity}
+\end{subfigure}
+\caption{K-means bad density samples}
 \end{figure}
 
 These problems could be solved by some variant of k-means algorithm.
