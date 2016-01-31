@@ -227,7 +227,7 @@ For example, because the main goal of k-means is to produce similar sized cluste
 \caption{K-means bad sized samples}
 \end{figure}
 
-Second problem is caused by cluster density. When we have some close dense clusters and cluster signle sparse cluster~\autoref{fig:kmeansbadinputdensity}, k-menas usually mark dense clusters as one and split sparse cluster into multiple clusters.~\autoref{fig:kmeansbadoutputdensity}
+Next problem is caused by cluster density. When we have some close dense clusters and cluster signle sparse cluster~\autoref{fig:kmeansbadinputdensity}, k-means usually mark dense clusters as one and split sparse cluster into multiple clusters.~\autoref{fig:kmeansbadoutputdensity}
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
@@ -241,17 +241,56 @@ Second problem is caused by cluster density. When we have some close dense clust
   \caption{k-means output}
   \label{fig:kmeansbadoutputdensity}
 \end{subfigure}
-\caption{K-means bad density samples}
+\caption{K-means bad density clusters}
 \end{figure}
 
-These problems could be solved by some variant of k-means algorithm.
+Other problem is that k-means algorithm does not recognize cluster shape and produce only globular clusters. This could be problem when two usually non-convex clusters~\autoref{fig:kmeansbadinputshape} are close enough and one interferes into convex hull of the other. Than, k-means usually assigns points from one cluster to another and vice versa~\autoref{fig:kmeansbadoutputshape}.
+\begin{figure}[h]
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleShape.eps}
+  \caption{Input data (assigned to clusters only for demonstration)}
+  \label{fig:kmeansbadinputshape}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleShape.eps}
+  \caption{k-means output}
+  \label{fig:kmeansbadoutputshape}
+\end{subfigure}
+\caption{K-means non-globular clusters}
+\end{figure}
+
+These problems could be solved by using more clusters than input data naturally requires. For example, input data~\autoref{fig:kmeansbadinputshape} contains two natural clusters, but when we try to split data into more clusters, the result will contain small clusters which contain only points from single original cluster and not from the other one~\autoref{fig:kmeansbadoutputsolution}. If we post process this data, we could get expected result and prevent this k-means deficiency.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.3\textwidth]{img/kmeans_badOutputSampleShapeSolution.eps}
+  \caption{K-means solution for bad shaped cluster}
+  \label{fig:kmeansbadoutputsolution}
+\end{figure}
+
 
 \subsubsection{K-Means Variants}
-Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable.
-There also exist few variations:
+Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable. These variants could solve some problems and limitations of classical k-means algorithm.
 \begin{description}
 \item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal (medoid is used instead of mean).
 \item[k-medians] - same algorithm as k-means, but in each dimension, median is used instead of mean for computing new centroid.
 \item[k-means++] - initial centers are chosen randomly. This selection avoid bad inputs.
 \item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster. The weighted mean (with the degree of belonging as weight) is used for computation new centroids.
+\item[Bisecting k-means]~\cite{Tan05} is variant of k-means, which produce hierarchical clustering.It works also iteratively as k-means, but in each step, the clusters with highest SSE is bisected by classical k-means algorithm with $k=2$. The algorithm iterates until it reaches the number of needed clusters.~\autoref{alg:bisectingkmeans}
+\begin{algorithm}
+\caption{Bisecting k-means}\label{alg:bisectingkmeans}
+\begin{algorithmic}[1]
+\State Insert all points into the list of clusters as single cluster
+\Repeat
+\State Select first cluster from the list of clusters
+\For{i=1 to number of iterations}
+\State Bisect selected cluster using k-means algorithm
+\EndFor
+\State Add the two clusters from the bisection with the lowest SSE to the list of the clusters
+\State Update centroid of each cluster
+\Until{list of clusters contains k clusters}
+\end{algorithmic}
+\end{algorithm}
+
 \end{description}
