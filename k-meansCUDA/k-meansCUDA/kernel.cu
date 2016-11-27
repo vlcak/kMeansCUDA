@@ -24,6 +24,7 @@ typedef float value_t;
 typedef unsigned char cluster_t;
 
 const int BLOCK_SIZE = 64;
+const int WARP_SIZE = 32;
 
 #ifdef __CUDACC__
 #pragma message "using nvcc"
@@ -291,7 +292,7 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
 
 	// for DivMeansKernel
 	int meansPerBlock = BLOCK_SIZE / dimension;
-	int meansBlocks = meansSize / meansPerBlock;
+	int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
 	clock_t start, end;
 	start = clock();
@@ -437,7 +438,7 @@ cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t d
 
 	// for DivMeansKernel
 	int meansPerBlock = BLOCK_SIZE / dimension;
-	int meansBlocks = meansSize / meansPerBlock;
+	int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
     clock_t start, end;
     start = clock();
@@ -607,10 +608,13 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
 	cudaError_t cudaStatus;
 
 	const int blockSizeN = BLOCK_SIZE;
+	const int pointsPerBlock = BLOCK_SIZE / WARP_SIZE;
+	const int nBlocksN = (dataSize - 1) / pointsPerBlock + 1;
+	dim3 blockGrid(WARP_SIZE, pointsPerBlock);
 
 	// for DivMeansKernel
 	int meansPerBlock = BLOCK_SIZE / dimension;
-	int meansBlocks = meansSize / meansPerBlock;
+	int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
 	//uint32_t* testAssigned,* testCounts;
 	//value_t* testDistances;
@@ -693,7 +697,8 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
 		//int nBlocksM = (meansSize - 1) / blockSizeM + 1;
 		for (uint32_t i = 0; i < iterations; ++i)
 		{
-			findNearestClusterManyDimUnrolledKernel<< <dataSize, blockSizeN, sizeof(value_t)* blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension, blockSizeN);
+			findNearestClusterManyDimUnrolledKernel<< <nBlocksN, blockGrid, sizeof(value_t) * blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
+			//findNearestClusterManyDimShuffleKernel << <nBlocksN, blockGrid>> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
 			cudaDeviceSynchronize();
 			//cudaMemcpy(testAssigned, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 			//std::vector<uint32_t> t(testAssigned, testAssigned + dataSize);
@@ -702,7 +707,6 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
 			//cudaMemcpy(testCounts, dev_counts, meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 			//std::vector<uint32_t> t3(testCounts, testCounts+ meansSize);
 
-			//TO-DO ZLEPSIT! (jako atomicDivMeansKernel)
 			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			cudaDeviceSynchronize();
 
