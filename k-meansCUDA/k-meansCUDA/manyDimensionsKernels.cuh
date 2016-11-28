@@ -1,7 +1,7 @@
 #ifndef MANYDIMENSIONKERNELS_CU
 #define MANYDIMENSIONKERNELS_CU
 
-#include "baseKernel.h"
+#include "baseKernel.cuh"
 
 __global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension);
 

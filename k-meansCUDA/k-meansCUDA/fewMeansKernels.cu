@@ -32,25 +32,25 @@ __global__ void findNearestClusterFewMeansKernel(const uint32_t meansSize, const
 
 __global__ void countDivFewMeansKernel(const uint32_t meansSize, uint32_t* counts, value_t* means, const value_t* meansSums, const uint32_t dimension, const uint32_t cellsCount)
 {
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	int id = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
 
 	uint32_t count = 0;
 
 	means[id] = meansSums[id];
 
-	count = counts[blockIdx.x];
+	count = counts[blockIdx.x * blockDim.y + threadIdx.y];
 
 	for (size_t i = 1; i < cellsCount; i++)
 	{
 		means[id] += meansSums[i * dimension * meansSize + id];
-		count += counts[i * meansSize + blockIdx.x];
+		count += counts[i * meansSize + blockIdx.x * blockDim.y + threadIdx.y];
 	}
 
 	means[id] /= count;
 
 	if (threadIdx.x == 0)
 	{
-		counts[blockIdx.x] = count;
+		counts[blockIdx.x * blockDim.y + threadIdx.y] = count;
 	}
 }
 

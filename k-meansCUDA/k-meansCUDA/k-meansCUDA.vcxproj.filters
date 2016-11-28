@@ -1,41 +1,69 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CudaCompile Include="kernel.cu" />
     <CudaCompile Include="atomicKernels.cu">
-      <Filter>CUDACode</Filter>
+      <Filter>CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="simpleKernels.cu">
-      <Filter>CUDACode</Filter>
+      <Filter>CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="manyDimensionsKernels.cu">
-      <Filter>CUDACode</Filter>
+      <Filter>CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="fewMeansKernels.cu">
-      <Filter>CUDACode</Filter>
+      <Filter>CUDAKernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="atomicTasks.cu">
+      <Filter>Tasks</Filter>
+    </CudaCompile>
+    <CudaCompile Include="fewMeansTasks.cu">
+      <Filter>Tasks</Filter>
+    </CudaCompile>
+    <CudaCompile Include="simpleTasks.cu">
+      <Filter>Tasks</Filter>
+    </CudaCompile>
+    <CudaCompile Include="manyDimensionsTasks.cu">
+      <Filter>Tasks</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="baseKernel.h" />
-    <ClInclude Include="simpleKernels.cuh">
-      <Filter>CUDAHeaders</Filter>
+    <ClInclude Include="atomicTasks.cuh">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="fewMeansTasks.cuh">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="simpleTasks.cuh">
+      <Filter>Tasks</Filter>
     </ClInclude>
     <ClInclude Include="atomicKernels.cuh">
-      <Filter>CUDAHeaders</Filter>
-    </ClInclude>
-    <ClInclude Include="manyDimensionsKernels.cuh">
-      <Filter>CUDAHeaders</Filter>
+      <Filter>CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="fewMeansKernels.cuh">
-      <Filter>CUDAHeaders</Filter>
+      <Filter>CUDAKernels</Filter>
+    </ClInclude>
+    <ClInclude Include="manyDimensionsKernels.cuh">
+      <Filter>CUDAKernels</Filter>
+    </ClInclude>
+    <ClInclude Include="simpleKernels.cuh">
+      <Filter>CUDAKernels</Filter>
+    </ClInclude>
+    <ClInclude Include="manyDimensionsTasks.cuh">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="baseKernel.cuh">
+      <Filter>CUDAKernels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="CUDAHeaders">
-      <UniqueIdentifier>{22d677b8-0493-44ba-bb49-db88ff50d213}</UniqueIdentifier>
+    <Filter Include="Tasks">
+      <UniqueIdentifier>{b22f3465-ebde-47ee-99fb-0ce08cabb84a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CUDACode">
+    <Filter Include="CUDAKernels">
       <UniqueIdentifier>{5d8332c0-bd4b-4bfc-9c99-7ba077466c84}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
 </Project>

@@ -156,17 +156,27 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="atomicKernels.cu" />
+    <CudaCompile Include="atomicTasks.cu" />
     <CudaCompile Include="fewMeansKernels.cu" />
-    <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="fewMeansTasks.cu" />
     <CudaCompile Include="manyDimensionsKernels.cu" />
+    <CudaCompile Include="manyDimensionsTasks.cu" />
     <CudaCompile Include="simpleKernels.cu" />
+    <CudaCompile Include="simpleTasks.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atomicKernels.cuh" />
-    <ClInclude Include="baseKernel.h" />
+    <ClInclude Include="atomicTasks.cuh" />
+    <ClInclude Include="baseKernel.cuh" />
     <ClInclude Include="fewMeansKernels.cuh" />
+    <ClInclude Include="fewMeansTasks.cuh" />
     <ClInclude Include="manyDimensionsKernels.cuh" />
+    <ClInclude Include="manyDimensionsTasks.cuh" />
     <ClInclude Include="simpleKernels.cuh" />
+    <ClInclude Include="simpleTasks.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
