@@ -2,7 +2,7 @@
 
 __global__ void findNearestClusterFewMeansKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
 {
-	unsigned int id = threadIdx.x + blockDim.x * (blockIdx.y * gridDim.x + blockIdx.x);
+	unsigned int id = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;  //blockDim.x * (blockIdx.y * gridDim.x + blockIdx.x);
 	value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
 	int clusterID = -1;
 	for (size_t i = 0; i < meansSize; ++i)
@@ -21,11 +21,11 @@ __global__ void findNearestClusterFewMeansKernel(const uint32_t meansSize, const
 	}
 	if (clusterID != -1)
 	{
-		atomicInc(&counts[blockIdx.y * meansSize + clusterID], INT_MAX);
+		atomicInc(&counts[(threadIdx.x % blockDim.y) * meansSize + clusterID], INT_MAX);
 		assignedClusters[id] = clusterID;
 		for (size_t j = 0; j < dimension; ++j)
 		{
-			atomicAdd(&measnSums[blockIdx.y * meansSize * dimension + clusterID * dimension + j], data[id * dimension + j]);
+			atomicAdd(&measnSums[(threadIdx.x % blockDim.y) * meansSize * dimension + clusterID * dimension + j], data[id * dimension + j]);
 		}
 	}
 }
@@ -54,6 +54,7 @@ __global__ void countDivFewMeansKernel(const uint32_t meansSize, uint32_t* count
 	}
 }
 
+// each thread has own copy...delete?
 __global__ void findNearestClusterFewMeansKernelV2(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
 {
 	unsigned int id = threadIdx.x + blockDim.x * blockIdx.x;
@@ -85,7 +86,7 @@ __global__ void findNearestClusterFewMeansKernelV2(const uint32_t meansSize, con
 	}
 }
 
-__global__ void countDivFewMeansKernelV2(const uint32_t dataSize, const uint32_t meansSize, uint32_t* counts, value_t* means, value_t* meansSums, const uint32_t dimension, const uint32_t cellsCount)
+__global__ void countDivFewMeansKernelV2(const uint32_t dataSize, const uint32_t meansSize, uint32_t* counts, value_t* means, value_t* meansSums, const uint32_t dimension)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -107,20 +108,21 @@ __global__ void countDivFewMeansKernelV2(const uint32_t dataSize, const uint32_t
 
 __global__ void findNearestClusterFewMeansKernelV3(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
 {
-	unsigned int id = threadIdx.x + blockDim.x * blockIdx.x;
+	unsigned int id = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
 
 	extern __shared__ value_t sharedArray[];
 	value_t* localSums = (value_t*)&sharedArray[0];
-	uint8_t* localCounts = (uint8_t *)&sharedArray[blockDim.x * meansSize * dimension];
+	uint32_t* localCounts = (uint32_t *)&sharedArray[blockDim.y * meansSize * dimension];
 
 	//memory initialization
-	for (size_t m = 0; m < meansSize; ++m)
+	// thread x;y will set x+k*blocksizex mean
+	for (size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
 	{
 		for (size_t d = 0; d < dimension; ++d)
 		{
-			localSums[threadIdx.x * dimension * meansSize + m * dimension + d] = 0;
+			localSums[threadIdx.y * meansSize * dimension + m * dimension + d] = 0;
 		}
-		localCounts[threadIdx.x * meansSize + m] = 0;
+		localCounts[threadIdx.y * meansSize + m] = 0;
 	}
 
 	value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
@@ -140,77 +142,65 @@ __global__ void findNearestClusterFewMeansKernelV3(const uint32_t meansSize, con
 		}
 	}
 
+	// add data to shared memory
 	if (id < dataSize)
 	{
 		assignedClusters[id] = clusterID;
 		for (size_t d = 0; d < dimension; ++d)
 		{
-			localSums[threadIdx.x * dimension * meansSize + clusterID * dimension + d] = data[id * dimension + d];
+			atomicAdd(&localSums[threadIdx.y * dimension * meansSize + clusterID * dimension + d], data[id * dimension + d]);
 		}
-		localCounts[threadIdx.x * meansSize + clusterID] = 1;
+		atomicInc(&localCounts[threadIdx.y * meansSize + clusterID], INT_MAX);
 	}
 
-	for (size_t r = blockDim.x / 2; r > 0; r >>= 1)
+	__syncthreads();
+
+	for (size_t r = blockDim.y / 2; r > 0; r >>= 1)
 	{
-		if (threadIdx.x < r)
+		// thread x;y will sum x+k*blocksizex mean
+		for (size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
 		{
-			for (size_t m = 0; m < meansSize; ++m)
+			// thready with y > r will help with reduction - y / r is offset, step is blockdimY / r
+			for (size_t d = threadIdx.y / r; d < dimension; d += blockDim.y / r)
 			{
-				for (size_t d = 0; d < dimension; ++d)
-				{
-					localSums[threadIdx.x * dimension * meansSize + m * dimension + d] += localSums[(threadIdx.x + r) * dimension * meansSize + m * dimension + d];
-				}
-				localCounts[threadIdx.x * meansSize + m] += localCounts[(threadIdx.x + r) * meansSize + m];
+				localSums[(threadIdx.y % r) * dimension * meansSize + m * dimension + d] += localSums[((threadIdx.y % r) + r) * dimension * meansSize + m * dimension + d];
 			}
-
-
-			//for (size_t j = 0; j < dimension; ++j)
-			//{
-			//    localSums[threadIdx.x * dimension + j] += localSums[(threadIdx.x + i) * dimension + j];
-			//}
-			//localCounts[threadIdx.x] += counts[threadIdx.x + i];
+			localCounts[(threadIdx.y % r) * meansSize + m] += localCounts[((threadIdx.y % r) + r) * meansSize + m];
 		}
 		__syncthreads();
 	}
 
-	if (threadIdx.x < meansSize)
+	// thread x;y will set x+k*blocksizex mean
+	for (size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
 	{
-		for (size_t i = 0; i < dimension; ++i)
+		// thready is offset, step is blockdimY
+		for (size_t d = threadIdx.y; d < dimension; d += blockDim.y)
 		{
-			measnSums[(blockIdx.x * meansSize + threadIdx.x) * dimension + i] = localSums[threadIdx.x * dimension + i];
+			atomicAdd(&measnSums[(blockIdx.x * meansSize + m) * dimension + d], localSums[m * dimension + d]);
 		}
-		counts[blockIdx.x * meansSize + threadIdx.x] = localCounts[threadIdx.x];
+		atomicAdd(&counts[blockIdx.x * meansSize + m], localCounts[m]);
 	}
 
 }
 
-__global__ void countDivFewMeansKernelV3(const uint32_t dataSize, const uint32_t meansSize, uint32_t* counts, value_t* means, value_t* meansSums, const uint32_t dimension, const uint32_t copyCount)
+__global__ void countDivFewMeansKernelV3(const uint32_t dataSize, const uint32_t meansSize, uint32_t* counts, value_t* means, value_t* meansSums, const uint32_t dimension)
 {
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-
-
-
-	for (size_t r = blockDim.x; r > 0; r >>= 1)
+	//threadID.z - meansID
+	//threadID.y - meansCopyID
+	//threadID.z - dimension
+	int meansID = threadIdx.z + blockDim.z * blockIdx.x;
+	for (size_t r = blockDim.y; r > 0; r >>= 1)
 	{
-		if (id < r)
+		if (threadIdx.y < r)
 		{
-			if (threadIdx.x + r < copyCount)
+			meansSums[threadIdx.y * dimension * meansSize + meansID * dimension + threadIdx.x] += meansSums[(threadIdx.y + r) * dimension * meansSize + meansID * dimension + threadIdx.x];
+			if (threadIdx.x == 0)
 			{
-				for (size_t m = 0; m < meansSize; ++m)
-				{
-					for (size_t d = 0; d < dimension; ++d)
-					{
-						meansSums[threadIdx.x * dimension * meansSize + m * dimension + d] += meansSums[(threadIdx.x + r) * dimension * meansSize + m * dimension + d];
-					}
-					counts[threadIdx.x * meansSize + m] += counts[(threadIdx.x + r) * meansSize + m];
-				}
+				counts[threadIdx.y * meansSize + meansID] += counts[(threadIdx.y + r) * meansSize + meansID];
 			}
 		}
 		__syncthreads();
 	}
 
-	if (id < meansSize * dimension)
-	{
-		means[id] = meansSums[id] / (value_t)counts[id / dimension];
-	}
+	means[meansID * dimension + threadIdx.x] = meansSums[meansID * dimension + threadIdx.x] / (value_t)counts[meansID];
 }

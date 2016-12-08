@@ -6,26 +6,24 @@
 #include <iostream>
 
 /// each thread computes one point, but blocks are in two dimensional grid and the y-th coordinate determinates which copy of means is used
-cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension, uint32_t cellsCount)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
 	cudaError_t cudaStatus;
 
-	uint32_t cellsCount = 4;
+	//uint32_t* testAssigned, *testCounts;
+	//value_t* testDistances;
 
-	uint32_t* testAssigned, *testCounts;
-	value_t* testDistances;
-
-	testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
-	testCounts = (uint32_t*)malloc(cellsCount * meansSize * sizeof(uint32_t));
-	testDistances = (value_t*)malloc(cellsCount * meansSize * dimension * sizeof(value_t));
+	//testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
+	//testCounts = (uint32_t*)malloc(cellsCount * meansSize * sizeof(uint32_t));
+	//testDistances = (value_t*)malloc(cellsCount * meansSize * dimension * sizeof(value_t));
 
 	// Launch a kernel on the GPU with one thread for each element.
-	int blockSizeN = BLOCK_SIZE;
-	dim3 gridSize;
-	gridSize.x = ((dataSize - 1) / blockSizeN) / cellsCount + 1;
-	gridSize.y = cellsCount;
+	dim3 blockSizeN = BLOCK_SIZE / cellsCount;
+	int gridSize = ((dataSize - 1) / BLOCK_SIZE) + 1;
+	//gridSize.x = ((dataSize - 1) / BLOCK_SIZE) / cellsCount  + 1;
+	//gridSize.y = cellsCount;
 
 	dim3 blockSizeMeans;
 	blockSizeMeans.x = dimension;
@@ -188,15 +186,15 @@ cudaError_t countKMeansFewMeansV2(const uint32_t iterations, const uint32_t data
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
 	cudaError_t cudaStatus;
 
-	uint32_t cellsCount = 4;
+	//uint32_t cellsCount = 4;
 
 
 	uint32_t* testAssigned, *testCounts;
 	value_t* testDistances;
 
 	testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
-	testCounts = (uint32_t*)malloc(cellsCount * meansSize * sizeof(uint32_t));
-	testDistances = (value_t*)malloc(cellsCount * meansSize * dimension * sizeof(value_t));
+	//testCounts = (uint32_t*)malloc(cellsCount * meansSize * sizeof(uint32_t));
+	//testDistances = (value_t*)malloc(cellsCount * meansSize * dimension * sizeof(value_t));
 
 	// Launch a kernel on the GPU with one thread for each element.
 	int blockSizeN = BLOCK_SIZE;
@@ -295,7 +293,7 @@ cudaError_t countKMeansFewMeansV2(const uint32_t iterations, const uint32_t data
 			//    sum_of_elems2 += t3[i];
 			//}
 
-			countDivFewMeansKernelV2 << <meansSize, dimension >> >(dataSize, meansSize, dev_counts, dev_means, dev_meansSums, dimension, cellsCount);
+			countDivFewMeansKernelV2 << <meansSize, dimension >> >(dataSize, meansSize, dev_counts, dev_means, dev_meansSums, dimension);
 			cudaDeviceSynchronize();
 
 			//cudaMemcpy(testCounts, dev_counts, cellsCount * meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
@@ -356,23 +354,24 @@ cudaError_t countKMeansFewMeansV2(const uint32_t iterations, const uint32_t data
 	return cudaStatus;
 }
 
-cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension, uint32_t sharedRedundancy, uint32_t globalRedundancy)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
 	cudaError_t cudaStatus;
-	int blockSizeN = BLOCK_SIZE;
-	int nBlocksN = (dataSize - 1) / blockSizeN + 1;
 
-	uint32_t* testAssigned, *testCounts;
-	value_t* testDistances;
+	dim3 blockSizeN(BLOCK_SIZE / sharedRedundancy, sharedRedundancy);
+	dim3 nBlocksN = (((dataSize - 1) / BLOCK_SIZE / globalRedundancy) + 1, globalRedundancy);
 
-	testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
-	testCounts = (uint32_t*)malloc(nBlocksN * meansSize * sizeof(uint32_t));
-	testDistances = (value_t*)malloc(nBlocksN * meansSize * dimension * sizeof(value_t));
+	//uint32_t* testAssigned, *testCounts;
+	//value_t* testDistances;
 
-	uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
-	value_t* testMeans = (value_t*)calloc(meansSize * dimension, sizeof(value_t));
+	//testAssigned = (uint32_t*)malloc(dataSize * sizeof(uint32_t));
+	//testCounts = (uint32_t*)malloc(nBlocksN * meansSize * sizeof(uint32_t));
+	//testDistances = (value_t*)malloc(nBlocksN * meansSize * dimension * sizeof(value_t));
+
+	//uint32_t* test = (uint32_t*)calloc(meansSize, sizeof(uint32_t));
+	//value_t* testMeans = (value_t*)calloc(meansSize * dimension, sizeof(value_t));
 
 
 	// Launch a kernel on the GPU with one thread for each element.
@@ -380,12 +379,16 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
 	//gridSize.y = cellsCount;
 	//int blockSizeM = 16;
 	//int nBlocksM = (meansSize - 1) / blockSizeM + 1;
-	int sharedMemorySize = (sizeof(value_t)* dimension + sizeof(uint8_t)) * meansSize * blockSizeN;
+	int sharedMemorySize = (sizeof(value_t)* dimension + sizeof(uint32_t)) * meansSize * sharedRedundancy;
 	cudaDeviceProp prop;
 	cudaFuncSetCacheConfig(findNearestClusterFewMeansKernelV3, cudaFuncCache::cudaFuncCachePreferShared);
 	cudaGetDeviceProperties(&prop, 0);// cudaGetDeviceProp::sharedMemPerBlock;
 	size_t i = prop.sharedMemPerMultiprocessor;
-	uint32_t reductionThreadCount = (uint32_t)pow(2, floor(log2((float)nBlocksN)));
+	//uint32_t reductionThreadCount = (uint32_t)pow(2, floor(log2((float)globalRedundancy)));
+
+	dim3 reductionThreadBlock = (dimension, globalRedundancy);
+	reductionThreadBlock.z = BLOCK_SIZE / (reductionThreadBlock.x * reductionThreadBlock.y);
+	int reductionBlocksN = (meansSize - 1) / reductionThreadBlock.z + 1;
 
 	clock_t start, end;
 	start = clock();
@@ -408,14 +411,10 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
 			throw 1;
 		}
 
-		cudaStatus = cudaMalloc((void**)&dev_meansSums, nBlocksN * meansSize * dimension * sizeof(value_t));
+		cudaStatus = cudaMalloc((void**)&dev_meansSums, globalRedundancy * meansSize * dimension * sizeof(value_t));
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "cudaMalloc failed!");
 			throw 1;
-		}
-		else
-		{
-			cudaMemset(dev_meansSums, 0, nBlocksN * meansSize * dimension * sizeof(value_t));
 		}
 
 		cudaStatus = cudaMalloc((void**)&dev_data, dataSize * dimension * sizeof(value_t));
@@ -430,14 +429,10 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
 			throw 1;
 		}
 
-		cudaStatus = cudaMalloc((void**)&dev_counts, nBlocksN * meansSize * sizeof(uint32_t));
+		cudaStatus = cudaMalloc((void**)&dev_counts, globalRedundancy * meansSize * sizeof(uint32_t));
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "cudaMalloc failed!");
 			throw 1;
-		}
-		else
-		{
-			cudaMemset(dev_counts, 0, nBlocksN * meansSize * sizeof(uint32_t));
 		}
 
 		// Copy input vectors from host memory to GPU buffers.
@@ -455,6 +450,9 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
 
 		for (uint32_t i = 0; i < iterations; ++i)
 		{
+			cudaMemset(dev_counts, 0, globalRedundancy * meansSize * sizeof(uint32_t));
+			cudaMemset(dev_meansSums, 0, globalRedundancy * meansSize * dimension * sizeof(value_t));
+
 			findNearestClusterFewMeansKernelV3 << <nBlocksN, blockSizeN, sharedMemorySize >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
 			cudaDeviceSynchronize();
 
@@ -473,8 +471,10 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
 			//    sum_of_elems2 += t3[i];
 			//}
 
-			countDivFewMeansKernelV3 << <1, reductionThreadCount >> >(dataSize, meansSize, dev_counts, dev_means, dev_meansSums, dimension, nBlocksN);
+			countDivFewMeansKernelV3 << <reductionBlocksN, reductionThreadBlock >> >(dataSize, meansSize, dev_counts, dev_means, dev_meansSums, dimension);
 			cudaDeviceSynchronize();
+
+			// reset means sums and counts
 
 			//cudaMemcpy(testCounts, dev_counts, nBlocksN * meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 			//std::vector<uint32_t> t4(testCounts, testCounts + meansSize);
