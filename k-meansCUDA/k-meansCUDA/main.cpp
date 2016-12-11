@@ -1,6 +1,7 @@
 ﻿#include "atomicTasks.cuh"
 #include "fewMeansTasks.cuh"
 #include "manyDimensionsTasks.cuh"
+#include "warpPerPointTasks.cuh"
 #include "simpleTasks.cuh"
 
 #include <stdint.h>

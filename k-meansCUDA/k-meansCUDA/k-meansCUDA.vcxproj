@@ -163,17 +163,21 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="manyDimensionsTasks.cu" />
     <CudaCompile Include="simpleKernels.cu" />
     <CudaCompile Include="simpleTasks.cu" />
+    <CudaCompile Include="warpPerPointKernel.cu" />
+    <CudaCompile Include="warpPerPointTasks.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atomicKernels.cuh" />
     <ClInclude Include="atomicTasks.cuh" />
     <ClInclude Include="baseKernel.cuh" />
+    <ClInclude Include="warpPerPointKernel.cuh" />
     <ClInclude Include="fewMeansKernels.cuh" />
     <ClInclude Include="fewMeansTasks.cuh" />
     <ClInclude Include="manyDimensionsKernels.cuh" />
     <ClInclude Include="manyDimensionsTasks.cuh" />
     <ClInclude Include="simpleKernels.cuh" />
     <ClInclude Include="simpleTasks.cuh" />
+    <ClInclude Include="warpPerPointTasks.cuh" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

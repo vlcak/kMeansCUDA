@@ -25,6 +25,12 @@
     <CudaCompile Include="manyDimensionsTasks.cu">
       <Filter>Tasks</Filter>
     </CudaCompile>
+    <CudaCompile Include="warpPerPointTasks.cu">
+      <Filter>Tasks</Filter>
+    </CudaCompile>
+    <CudaCompile Include="warpPerPointKernel.cu">
+      <Filter>CUDAKernels</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atomicTasks.cuh">
@@ -52,6 +58,12 @@
       <Filter>Tasks</Filter>
     </ClInclude>
     <ClInclude Include="baseKernel.cuh">
+      <Filter>CUDAKernels</Filter>
+    </ClInclude>
+    <ClInclude Include="warpPerPointTasks.cuh">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="warpPerPointKernel.cuh">
       <Filter>CUDAKernels</Filter>
     </ClInclude>
   </ItemGroup>
