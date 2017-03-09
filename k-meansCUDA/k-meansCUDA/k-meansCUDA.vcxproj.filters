@@ -31,6 +31,12 @@
     <CudaCompile Include="warpPerPointKernel.cu">
       <Filter>CUDAKernels</Filter>
     </CudaCompile>
+    <CudaCompile Include="warpPerMeanTasks.cu">
+      <Filter>Tasks</Filter>
+    </CudaCompile>
+    <CudaCompile Include="warpPerMeanKernel.cu">
+      <Filter>CUDAKernels</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atomicTasks.cuh">
@@ -66,6 +72,18 @@
     <ClInclude Include="warpPerPointKernel.cuh">
       <Filter>CUDAKernels</Filter>
     </ClInclude>
+    <ClInclude Include="warpPerMeanTasks.cuh">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="warpPerMeanKernel.cuh">
+      <Filter>CUDAKernels</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="cudaException.h">
+      <Filter>Tasks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tasks">
@@ -77,5 +95,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="helpers.cpp">
+      <Filter>Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="cudaExceptions.cpp">
+      <Filter>Tasks</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
