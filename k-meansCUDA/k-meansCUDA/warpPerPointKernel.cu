@@ -121,6 +121,6 @@ __global__ void findNearestWarpPerPointKernelShuffle(const uint32_t meansSize, c
 	distance = min(distance, __shfl_xor(distance, 16));
 	if (warpSize > 32) distance = min(distance, __shfl_xor(distance, 32));
 
-
+	// TODO what next?
 
 }

@@ -163,6 +163,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="manyDimensionsTasks.cu" />
     <CudaCompile Include="simpleKernels.cu" />
     <CudaCompile Include="simpleTasks.cu" />
+    <CudaCompile Include="warpPerMeanKernel.cu" />
+    <CudaCompile Include="warpPerMeanTasks.cu" />
     <CudaCompile Include="warpPerPointKernel.cu" />
     <CudaCompile Include="warpPerPointTasks.cu" />
   </ItemGroup>
@@ -170,6 +172,10 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="atomicKernels.cuh" />
     <ClInclude Include="atomicTasks.cuh" />
     <ClInclude Include="baseKernel.cuh" />
+    <ClInclude Include="cudaException.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="warpPerMeanKernel.cuh" />
+    <ClInclude Include="warpPerMeanTasks.cuh" />
     <ClInclude Include="warpPerPointKernel.cuh" />
     <ClInclude Include="fewMeansKernels.cuh" />
     <ClInclude Include="fewMeansTasks.cuh" />
@@ -180,6 +186,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="warpPerPointTasks.cuh" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cudaExceptions.cpp" />
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
