@@ -3,15 +3,14 @@
 #include "manyDimensionsTasks.cuh"
 #include "warpPerPointTasks.cuh"
 #include "simpleTasks.cuh"
+#include "helpers.h"
 
 #include <stdint.h>
 #include <stdexcept>
 #include <stdio.h> 
 #include <sstream>
 #include <iostream>
-
 #include <time.h>
-
 #include <stdlib.h>
 #include <vector>
 
