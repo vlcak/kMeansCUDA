@@ -6,13 +6,10 @@
 
 #include <stdint.h>
 
-//uint64_t dimension;
 typedef float value_t;
 typedef unsigned char cluster_t;
 
-
 const int BLOCK_SIZE = 64;
-const int DEVICE_ID = 0;
 const int WARP_SIZE = 32;
 #ifdef __CUDACC__
 #pragma message "using nvcc"

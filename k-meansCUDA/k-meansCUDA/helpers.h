@@ -5,7 +5,28 @@
 #include "cuda_runtime.h"
 
 #include <stdint.h>
-#include <vector>
+#include <sstream>
+
+typedef float value_t;
+typedef unsigned char cluster_t;
+
+static int DEVICE_ID;
+
+template <typename T>
+T lexical_cast(const std::string& x)
+{
+	std::istringstream stream(x);
+	T res;
+	stream >> res;
+	return res;
+}
+
+
+value_t* loadData(const std::string& file_name, uint64_t& dataSize, uint64_t& dimension);
+
+void saveResults(const std::string& means_file_name, const std::string& clusters_file_name, const uint32_t meansSize, const value_t* means, const uint32_t dataSize, const value_t* data, const uint32_t* assignedClusters, uint64_t& dimension);
+
+bool verifyDeviceID(int deviceID);
 
 void setDevice(int deviceID);
 
@@ -53,6 +74,5 @@ void transposeInput(T *arrayToTranspopse, uint32_t size, uint32_t dimension)
 			;
 	}
 }
-
 
 #endif //HELPERS_H
