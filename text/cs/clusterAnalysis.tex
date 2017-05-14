@@ -219,7 +219,7 @@ Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algo
 
 \subsection{K-Means} 
 Shlukovací algoritmy jsou širokou třídou algoritmů. Nemohli jsme se tedy soustředit na všechny modely, jejichž algoritmy bychom urychlovali paralelizací, protože k ejjich urychlení neexistuje žádný univerzální přístup. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý detail konkrétního algoritmu. Potřebujeme tedy zvolit jeden z nejvšestrannějších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se zvolili algoritmus k-means kvůli jeho široké škále využití a nezávislosti na vlastnostech vstupních dat. \\
-K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus používá shlukový modelu založený na centroidech. Vstupem je K-menas je množina $n$ bodů v $d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a volitelném počtu iterací $ i $. \\
+K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus využívající shlukový modelu založený na centroidech. Vstupem je K-menas je množina $n$ bodů v $d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a volitelném počtu iterací $ i $. \\
 Úkolem je přidělit body centroidům (středům shluků) a minimalizovat vzdálenost mezi centroidem shluku a body obsaženými v tomuto shluku. Algoritmus funguje iterativně a každá iterace se skládá ze dvou kroků. V prvním kroku je pro každý bod nalezen nejbližší centroid a tento bod je přidělen do shluku, který k centroidu náleží. Ve druhém kroku jsou nové centroidy vypočítány jako průměr všech bodů přidělených stejnému shluku. Algoritmus končí po předem daném počtu kroků nebo když se mezi dvěma iteracemi nic nezmění. \\
 Výstupem tohoto algoritmu jsou souřadnice centroidů a body s přiřazenými shluky.
 
@@ -242,106 +242,107 @@ Výstupem tohoto algoritmu jsou souřadnice centroidů a body s přiřazenými s
 \end{algorithmic}
 \end{algorithm}
 
-Because at first step we do not know the centroids, usually, the first $k$ points of input set are used as initial centroids. K-means converge fast in first few iterations, so the stopping condition could be changed to ``Until relatively few points change clusters''.~\cite{Tan05}.\\
-The complexity of the computation is $O(n*k*i*d)$, where $n$ is number of input points, $k$ is number of clusters, $i$ is number of iterations and $d$ is dimension of space.\\
+Protože v prvním kroku neznáme centroidy, často se jako počáteční hodnoty používá prvních $k$ bodů vstupní množiny. Algoritmus K-means konverguje rychle během několika prvních iterací, takže podmínku zastavení můžeme pozměnit na "Změnilo se jen relativně málo centroidů". \cite{Tan05}. \\
+Složitost výpočtu je $O(n*k*i*d)$, kde $n$ je počet vstupních bodů, $k$ je počet clusterů, $i$ je počet iterací a $d$ je dimenze vstupních dat. \\
 
-To evaluate k-means output, we need to somehow measure the quality of cluster assignment. For this purpose is most commonly used \textbf{Sum of Squared Error (SSE)} function. Single point error is represented by distance from the centroid of assigned cluster and the function than sums square errors of all points.
-$$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{is centroid of cluster} $O_i$ }$$
-If we had results with bad $SSE$, we could reduce it by increasing number of clusters $k$, but this may not help if initial clusters are chosen badly.
+Abychom mohli vyhodnotit výstup k-means, musíme uměnit měřit kvalitu přiřazení do klastrů. Pro tento účel se nejčastěji používá funkce \textbf{Sum of Squared Error (SSE)}. Chyba jednoho bodu je reprezentována vzdáleností od centroidu daného shluku a SSE funkce sčítá čtverce chyb jednotlivých bodů.
+$$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }$$
+Pokud dostáváme výsledky se špatným $SSE$, můžeme jej snížit například zvýšením počtu klastrů $k$, ale pokud jsou počáteční klastry vybrány špatně, nemusí to pomoci.
 
-The initial centroids are one of the disadvantages of k-means algorithm because we need to know the number of output clusters at the beginning and after computation start this number could not be changed. This possibility might be demanded by some type of problems and k-means is inconvenient for them. In addition to that, problem is also selecting of initial centroids. Although we choose ideal $k$ for the input data, the probability we chose objects from different clusters as initial points is really small~\cite{Tan05}: $$P = \frac{\mbox{number of ways to select one centroid from each cluster}}{\mbox{number of ways to select K centroids}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ This probability is close to zero even for small $k$, for example for $k=10$, probability is $0.00036$.\\
-There are some ways to solve this problem and pickup better initial points~\cite{Tan05}:
+Počáteční centroidy jsou jednou z nevýhod k-means algoritmu, protože jejich počet potřebujeme znát již na začátku a po počátečním výpočtu toto číslo už nelze změnit. Tuto možnost mohou ale některé typy problémů vyžadovat a tak jsou pro ně k-means nepoužitelné. Dalším problémem je výběr počátečních centroidů. Ačkoliv zvolíme ideální $k$ pro vstupní data, pravděpodobnost, že jsme zvolili objekty z různých klastrů jako počáteční centroidy, je opravdu malá~\cite{Tan05}: $$P = \frac{\mbox{počet způsobů jakým můžeme vybrat jeden bod z každého shluku}}{\mbox{počet možností jakými můžeme zvolit K centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ Tato pravděpodobnost se blíží nule i pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
+Existují ale způsoby, jak tento problém vyřešit a vybrat lepší počáteční body~\cite{Tan05}:
 \begin{description}
-\item[multiple runs] k-means algorithm is run multiple times with different initial centroid and the best one is chosen.
-\item[samples] Sample input data with hierarchical clustering and determine initial centroids.
-\item[more centroids] Select more than $k$ centroids and then selects the most widely separated ones.
-\item[postprocessing] Result of the algorithm is postprocessed - Clusters with high $SSE$ could be split and on the other side close clusters with low $SSE$ could be merged.
+\item[více běhů] k-means je spuštěn několikrát s různými počátečními body a jako výstup je vybrán nejlepší výsledek.
+\item[vzorkování] Počáteční cenroidy jsou vybrány na základě ovzorkování vstupních dat hierarchicjým shlukování.
+\item[více centroidů] Je vybráno více centroidů než je vstupní $k$ a z nich se vyberou ty nejlépe rozmístěné.
+\item[následné zpracování] Výsledek algoritmu je následné zpracován - Shluky s nejvyšším $SSE$ jsou rozděleny a na druhou stranu shluky s nejnižším $SSE$ mohou být spojeny.
 \end{description} 
 
-Other problem of k-means is that the basic version could produce empty clusters. This could be solved by algorithm update: when we found empty cluster, we could choose point which contributes most to $SSE$ as centroid instead of empty cluster or we can choose point from the cluster with greatest $SSE$~\cite{Tan05}.
+Dalším problémem k-means je, že základní verze může produkovat prázdné shluky. To lze vyřešit aktualizací algoritmu: pokud najdeme prázdný shluk, můžeme ho nahradit bodem, který nejvíce přispívá k $SSE$. Další možností je vybrat bod z clusteru s největším $SSE$ ~\cite{Tan05}.
 
-Also if clusters differs significantly in size/density/non-globular shapes~\cite{Tan05}, cluster analysis could be problem for k-means\\
-For example, because the main goal of k-means is to produce similar sized clusters, we will have problem with input data where one big cluster contains many objects and one smaller cluster has only few objects~\autoref{fig:kmeansbadinputsize}. Than k-means divide the bigger cluster~\autoref{fig:kmeansbadoutputsize} so some objects from bigger that are closer centroid to smaller cluster are assigned to smaller cluster which could be undesirable because k-means ignores input data distribution.
+Pokud se shluky výrazně liší v rozměrech/hustotě nebo jde-li o nekulovité útvary, má pak shluková analýza problém s nalezením prostředků shluků~\cite{Tan05}. \\
+Jelikož je hlavním cílem k-means nalézt shluky s podobnou velikostí, budeme mít problém se vstupními daty, které obsahují jeden velký shluk s mnoha objekty a jeden menší shluk s několika málo objekty~\autoref{fig:kmeansbadinputsize}. k-means potom rozdělí větší shluk~\autoref{fig:kmeansbadoutputsize}, takže objekty, které náleží logicky do většího shluku, ale zároveň jsou blíže centroidu z menšímu shluku, jsou přiřazeny k menšímu shluku, což může být nežádoucí. Je to dáno tím, že k-means ignorují distribuci vstupních dat.
+
 \begin{figure}[h]
 \centering
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleSize.eps}
-  \caption{Input data (assigned to clusters only for demonstration)}
+  \caption{Vstupní data (rozřazené do shluků jen pro ilustraci)}
   \label{fig:kmeansbadinputsize}
 \end{subfigure}
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleSize.eps}
-  \caption{k-means output}
+  \caption{výstup k-means}
   \label{fig:kmeansbadoutputsize}
 \end{subfigure}
-\caption{K-means bad sized samples}
+\caption{K-means nad shluky různých velikostí}
 \end{figure}
 
-Next problem is caused by cluster density. When we have some close dense clusters and cluster signle sparse cluster~\autoref{fig:kmeansbadinputdensity}, k-means usually mark dense clusters as one and split sparse cluster into multiple clusters.~\autoref{fig:kmeansbadoutputdensity}
+Také hustota shluků může způsobovat k-means problémy. Když máme dva husté shluky blízko sebe a jeden vzdálenější shluk s nízkou hustotou~\autoref{fig:kmeansbadinputdensity}, k-means obvykle označují husté shluky jako jeden a rozdělí řídký shluk do více shluků.~\autoref{fig:kmeansbadoutputdensity}
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleDensity.eps}
-  \caption{Input data (assigned to clusters only for demonstration)}
+  \caption{Vstupní data (rozřazené do shluků jen pro ilustraci)}
   \label{fig:kmeansbadinputdensity}
 \end{subfigure}
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleDensity.eps}
-  \caption{k-means output}
+  \caption{výstup k-means}
   \label{fig:kmeansbadoutputdensity}
 \end{subfigure}
-\caption{K-means bad density clusters}
+\caption{K-means nad shluky různé hustoty}
 \end{figure}
 
-Other problem is that k-means algorithm does not recognize cluster shape and produce only globular clusters. This could be problem when two usually non-convex clusters~\autoref{fig:kmeansbadinputshape} are close enough and one interferes into convex hull of the other. Than, k-means usually assigns points from one cluster to another and vice versa~\autoref{fig:kmeansbadoutputshape}.
+Dalším problémem je, že k-means algoritmus nerozpozná tvar shluku a produkuje pouze kulové shluky. To je problém, pokud dva obvykle nekonvexní shluky~\autoref{fig:kmeansbadinputshape} jsou dostatečně blízko a jeden zasahuje do konvexního obalu toho druhého.K-means pak obvykle přidělují body z jednoho shluku do druhého a naopak~\autoref{fig:kmeansbadoutputshape}.
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badInputSampleShape.eps}
-  \caption{Input data (assigned to clusters only for demonstration)}
+  \caption{Vstupní data (rozřazené do shluků jen pro ilustraci)}
   \label{fig:kmeansbadinputshape}
 \end{subfigure}
 \begin{subfigure}{.49\textwidth}
   \centering
   \includegraphics[width=.5\linewidth]{img/kmeans_badOutputSampleShape.eps}
-  \caption{k-means output}
+  \caption{výstup k-means}
   \label{fig:kmeansbadoutputshape}
 \end{subfigure}
-\caption{K-means non-globular clusters}
+\caption{K-means nad nekulovitými shluky}
 \end{figure}
 
-These problems could be solved by using more clusters than input data naturally requires. For example, input data~\autoref{fig:kmeansbadinputshape} contains two natural clusters, but when we try to split data into more clusters, the result will contain small clusters which contain only points from single original cluster and not from the other one~\autoref{fig:kmeansbadoutputsolution}. If we post process this data, we could get expected result and prevent this k-means deficiency.
+Tyto problémy mohou být vyřešeny použitím více shluků, než přirozeně vyžadují vstupní data. Například vstupní data~\autoref{fig:kmeansbadinputshape} obsahují dva přirozené shluky, ale když se pokusíme rozdělit data na více shluků, výsledek bude obsahovat malé shluky, které obsahují body z jednoho přirozeného shluku a neobsahují shluky z druhého~\autoref{fig:kmeansbadoutputsolution}. Pokud tyto informace následně zpracujeme, můžeme získat očekávaný výsledek a zabránit tomuto nedostatku k-means.
 \begin{figure}[h]
   \centering
   \includegraphics[width=.3\textwidth]{img/kmeans_badOutputSampleShapeSolution.eps}
-  \caption{K-means solution for bad shaped cluster}
+  \caption{řešení k-means pro shluky špatných tvarů}
   \label{fig:kmeansbadoutputsolution}
 \end{figure}
 
 
-\subsubsection{K-Means Variants}
-Because k-means is universal algorithm, there exists some variants if classical k-means algorithm is inconvenient or unusable. These variants could solve some problems and limitations of classical k-means algorithm.
+\subsubsection{Varianty k-means}
+Protože k-means jsou univerzálním algoritmem, existují různé varianty pro případy, kdy je klasický algoritmus k-prostředků nevhodný nebo nepoužitelný. Tyto varianty mohou vyřešit některé problémy a omezení klasického algoritmu k-means.
 \begin{description}
-\item[k-medoids] - centroids are not virtual points in $R^d$ space but point from input data whose average dissimilarity to all other objects in cluster is minimal (medoid is used instead of mean).
-\item[k-medians] - same algorithm as k-means, but in each dimension, median is used instead of mean for computing new centroid.
-\item[k-means++] - initial centers are chosen randomly. This selection avoid bad inputs.
-\item[Fuzzy C-means] - fuzzy cluster~\ref{sec:clusterorganization} assignment is allowed. Object does not belong strictly to one centroid but it has degree of belonging to cluster. The weighted mean (with the degree of belonging as weight) is used for computation new centroids.
-\item[Bisecting k-means]~\cite{Tan05} is variant of k-means, which produce hierarchical clustering.It works also iteratively as k-means, but in each step, the clusters with highest SSE is bisected by classical k-means algorithm with $k=2$. The algorithm iterates until it reaches the number of needed clusters.~\autoref{alg:bisectingkmeans}
+\item[k-medoids] - centroidy nejsou uměle vytvořené body v prostoru $R^d$, ale reálné body ze vstupních dat, jejichž průměrná odchylka od ostatních bodů ve shluku je minimální (místo průměru se využívá medián).
+\item[k-medians] - stejný algoritmus jako k-means, ale pro výpočet nového centroidu se v každé dimenzi využívá medián místo výpočtu průměrné hodnoty.
+\item[k-means++] - Počáteční centroidy jsou vybrány náhodně. Tím lze zabránit potenciálním špatným vstupům.
+\item[Fuzzy C-means] - jsou povoůeny neostré shluky~\ref{sec:clusterorganization}. Objekty nepatří striktně jednomu shluku, ale uvažujeme stupeň náležení k jednotlivých shlukům. Pro výpočet nových centroidů se využívá vážený průměr (kde je jako váha brán stupeň náležení).
+\item[Rozdělující (Bisecting) k-means]~\cite{Tan05} je varianta k-means, která produkuje hierarchické uspořádání shluků.Pracuje, stejně jako k-means, iterativně, ale v každém kroku je shluk s nejvyšším $SSE$ rozdělen na 2 pomocí klasického k.means algoritmu s parametrem $k=2$. Algoritmus iteruje, dokud nedosáhne daného počtu shluků.~\autoref{alg:bisectingkmeans}
 \begin{algorithm}
-\caption{Bisecting k-means}\label{alg:bisectingkmeans}
+\caption{Rozdělující k-means}\label{alg:bisectingkmeans}
 \begin{algorithmic}[1]
-\State Insert all points into the list of clusters as single cluster
+\State Vlož všechny body do seznamu shluků jako jeden shluk-
 \Repeat
-\State Select first cluster from the list of clusters
-\For{i=1 to number of iterations}
-\State Bisect selected cluster using k-means algorithm
+\State Vyber první shluk ze seznamu shluků
+\For{i=1 do daného počtu iterací}
+\State Rozděl vybraný shluk pomocí základního k-means algoritmu
 \EndFor
-\State Add the two clusters from the bisection with the lowest SSE to the list of the clusters
-\State Update centroid of each cluster
-\Until{list of clusters contains k clusters}
+\State Přidej dva shluky vzniklé rozdělením s nejnižším SSE do seznamu shluků
+\State Aktualizuj centroidy pro každá shluk
+\Until{seznam shluků obsahuje k shluků}
 \end{algorithmic}
 \end{algorithm}
 
