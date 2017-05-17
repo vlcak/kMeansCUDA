@@ -51,7 +51,35 @@
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
 %% POZOR, nezapomeňte vyplnit jméno práce a autora.
+\usepackage[czech]{babel}
+\usepackage{polyglossia}
+\setmainlanguage{czech}
 \usepackage[unicode]{hyperref}   % Musí být za všemi ostatními balíčky
+\makeatletter
+\ifdefined\HyLang@czech\else
+\addto\blockextras@czech{%
+  \def\equationautorefname{Rovnice}%
+  \def\footnoteautorefname{footnote}%
+  \def\itemautorefname{item}%
+  \def\figureautorefname{Obrázek}%
+  \def\tableautorefname{Taulka}%
+  \def\partautorefname{Part}%
+  \def\appendixautorefname{Appendix}%
+  \def\chapterautorefname{chapter}%
+  \def\sectionautorefname{section}%
+  \def\subsectionautorefname{subsection}%
+  \def\subsubsectionautorefname{subsubsection}%
+  \def\paragraphautorefname{paragraph}%
+  \def\subparagraphautorefname{subparagraph}%
+  \def\FancyVerbLineautorefname{line}%
+  \def\theoremautorefname{Theorem}%
+  \def\pageautorefname{page}%
+}
+
+\makeatletter
+\renewcommand{\ALG@name}{Algoritmus}
+\makeatother
+
 \hypersetup{pdftitle=Parallelization of Clustering Algorithms}
 \hypersetup{pdfauthor=Bc. Jakub Vlček}
 
@@ -256,9 +284,9 @@ data mining, cluster analysis, parallelization, GPU, CUDA
 %%% Jednotlivé kapitoly práce jsou pro přehlednost uloženy v samostatných souborech
 \include{preface}
 \include{clusterAnalysis}
-\include{GPGPU}
-\include{implmementation}
-\include{results}
+%\include{GPGPU}
+%\include{implmementation}
+%\include{results}
 
 % Ukázka použití některých konstrukcí LateXu (odkomentujte, chcete-li)
 % \include{example}
