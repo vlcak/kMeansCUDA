@@ -1,15 +1,15 @@
 #include "manyDimensionsKernels.cuh"
 
-__global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+__global__ void findNearestClusterManyDimKernel(const my_size_t meansSize, const value_t *means, value_t *meansSums, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const my_size_t dimension)
 {
 	//int id = threadIdx.x;
 	value_t minDistance = LLONG_MAX, difference = 0, distance = 0;
 	int clusterID = -1;
 	extern __shared__ value_t distances[];
 
-	for (size_t i = 0; i < meansSize; ++i)
+	for (my_size_t i = 0; i < meansSize; ++i)
 	{
-		for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+		for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 		{
 			// means are addressed for each point equally
 			// data are addressed following (offset of points counted by previous blocks + offset of points counted by previous warps)
@@ -22,7 +22,7 @@ __global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const 
 		//sum distances in warp
 		// warp is using only half of threads, but it cant count distances for next warp because of synchronization (or sync)
 		// __syncthreads();
-		for (size_t j = blockDim.x / 2; j > 0; j >>= 1)
+		for (my_size_t j = blockDim.x / 2; j > 0; j >>= 1)
 		{
 			if (threadIdx.x < j)
 			{
@@ -45,22 +45,22 @@ __global__ void findNearestClusterManyDimKernel(const uint32_t meansSize, const 
 		// number of points counted in different blocks + number of points counted in different warps
 		assignedClusters[blockIdx.x * blockDim.y + threadIdx.y] = clusterID;
 	}
-	for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+	for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 	{
 		atomicAdd(&meansSums[clusterID * dimension + j], data[blockIdx.x * blockDim.y * dimension + threadIdx.y * dimension + j]);
 	}
 }
 
-__global__ void findNearestClusterManyDimUnrolledKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+__global__ void findNearestClusterManyDimUnrolledKernel(const my_size_t meansSize, const value_t *means, value_t *meansSums, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const my_size_t dimension)
 {
 	//int id = threadIdx.x;
 	value_t minDistance = LLONG_MAX, difference = 0, distance = 0;
 	int clusterID = -1;
 	extern __shared__ value_t distances[];
 
-	for (size_t i = 0; i < meansSize; ++i)
+	for (my_size_t i = 0; i < meansSize; ++i)
 	{
-		for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+		for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 		{
 			// means are addressed for each point equally
 			// data are addressed following (offset of points counted by previous blocks + offset of points counted by previous warps)
@@ -100,22 +100,22 @@ __global__ void findNearestClusterManyDimUnrolledKernel(const uint32_t meansSize
 		// number of points counted in different blocks + number of points counted in different warps
 		assignedClusters[blockIdx.x * blockDim.y + threadIdx.y] = clusterID;
 	}
-	for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+	for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 	{
 		atomicAdd(&meansSums[clusterID * dimension + j], data[blockIdx.x * blockDim.y * dimension + threadIdx.y * dimension + j]);
 	}
 }
 
 #if __CUDA_ARCH__ >= 300
-__global__ void findNearestClusterManyDimShuffleKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const uint32_t dimension)
+__global__ void findNearestClusterManyDimShuffleKernel(const my_size_t meansSize, const value_t *means, value_t *meansSums, const value_t* data, uint32_t* counts, uint32_t* assignedClusters, const my_size_t dimension)
 {
 	//int id = threadIdx.x;
 	value_t minDistance = LLONG_MAX, difference = 0, distance = 0;
 	int clusterID = -1;
 
-	for (size_t i = 0; i < meansSize; ++i)
+	for (my_size_t i = 0; i < meansSize; ++i)
 	{
-		for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+		for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 		{
 			// means are addressed for each point equally
 			// data are addressed following (offset of points counted by previous blocks + offset of points counted by previous warps)
@@ -157,7 +157,7 @@ __global__ void findNearestClusterManyDimShuffleKernel(const uint32_t meansSize,
 		// number of points counted in different blocks + number of points counted in different warps
 		assignedClusters[blockIdx.x * blockDim.y + threadIdx.y] = clusterID;
 	}
-	for (size_t j = threadIdx.x; j < dimension; j += blockDim.x)
+	for (my_size_t j = threadIdx.x; j < dimension; j += blockDim.x)
 	{
 		atomicAdd(&meansSums[clusterID * dimension + j], data[blockIdx.x * blockDim.y * dimension + threadIdx.y * dimension + j]);
 	}

@@ -6,11 +6,14 @@
 #include <stdio.h>
 #include <iostream>
 
-cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize_u32, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0;
 	value_t* dev_data = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_test = 0;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 	cudaError_t cudaStatus;
 
 	// Launch a kernel on the GPU with one thread for each element.
@@ -42,7 +45,7 @@ cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize
 
 		for (uint32_t i = 0; i < iterations; ++i)
 		{
-			findNearestClusterKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dataSize, dev_data, dev_assignedClusters, dimension);
+			findNearestClusterKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_data, dev_assignedClusters, dimension);
 			synchronizeDevice();
 			countNewMeansKernel << <nBlocksM, blockSizeM >> >(dev_assignedClusters, dataSize, dev_data, dev_means, dimension, dev_test);
 			synchronizeDevice();

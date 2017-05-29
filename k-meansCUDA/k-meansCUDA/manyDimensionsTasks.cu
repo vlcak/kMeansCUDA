@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include <iostream>
 
-cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
 	cudaError_t cudaStatus;
 
 	const int blockSizeN = BLOCK_SIZE;
@@ -63,7 +65,7 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
 		//int nBlocksM = (meansSize - 1) / blockSizeM + 1;
 		for (uint32_t i = 0; i < iterations; ++i)
 		{
-			findNearestClusterManyDimUnrolledKernel << <nBlocksN, blockGrid, sizeof(value_t)* blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
+			findNearestClusterManyDimUnrolledKernel << <nBlocksN, blockGrid, sizeof(value_t)* blockSizeN >> >(meansSize, dev_means, dev_meansSums, dev_data, dev_counts, dev_assignedClusters, dimension);
 			//findNearestClusterManyDimShuffleKernel << <nBlocksN, blockGrid>> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dev_assignedClusters, dimension);
 			synchronizeDevice();
 			//cudaMemcpy(testAssigned, dev_assignedClusters, dataSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
@@ -73,7 +75,7 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
 			//cudaMemcpy(testCounts, dev_counts, meansSize * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 			//std::vector<uint32_t> t3(testCounts, testCounts+ meansSize);
 
-			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
+			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			synchronizeDevice();
 
 			cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));

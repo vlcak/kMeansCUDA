@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 typedef float value_t;
+typedef int32_t my_size_t;
 typedef unsigned char cluster_t;
 
 const int BLOCK_SIZE = 64;

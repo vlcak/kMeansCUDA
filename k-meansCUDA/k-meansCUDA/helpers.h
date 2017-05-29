@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <sstream>
+#include <vector>
 
 typedef float value_t;
 typedef unsigned char cluster_t;

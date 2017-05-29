@@ -7,10 +7,13 @@
 #include <iostream>
 
 
-cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize_u32, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 	cudaError_t cudaStatus;
 
 	// Launch a kernel on the GPU with one thread for each element.
@@ -56,7 +59,7 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
 		{
 			findNearestClusterAtomicKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dimension, 0, dataSize);
 			synchronizeDevice();
-			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
+			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			synchronizeDevice();
 
 			cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
@@ -99,10 +102,13 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
 	return cudaStatus;
 }
 
-cudaError_t countKMeansAtomicTransposed(const uint32_t iterations, const uint32_t dataSize, value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansAtomicTransposed(const uint32_t iterations, const uint32_t dataSize_u32, value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 	cudaError_t cudaStatus;
 
 	// Launch a kernel on the GPU with one thread for each element.
@@ -157,7 +163,7 @@ cudaError_t countKMeansAtomicTransposed(const uint32_t iterations, const uint32_
 		{
 			findNearestClusterAtomicKernelTransposed << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dimension, 0, dataSize);
 			synchronizeDevice();
-			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
+			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			synchronizeDevice();
 
 			cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));
@@ -208,11 +214,14 @@ cudaError_t countKMeansAtomicTransposed(const uint32_t iterations, const uint32_
 	return cudaStatus;
 }
 
-cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t dataSize_u32, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0, *dev_data1 = 0, *dev_data2 = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
 	cudaError_t cudaStatus;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 	uint32_t dataPartSize, dataPartsCount, availableDataMem;
 	size_t freeMem, totMem;
 
@@ -269,9 +278,9 @@ cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t d
 		copyMemory(dev_means, means, meansSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
 		copyMemory(dev_data1, data, dataPartSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
 
-		for (uint32_t i = 0; i < iterations; ++i)
+		for (int32_t i = 0; i < iterations; ++i)
 		{
-			for (size_t j = 0; j < dataPartsCount; ++j)
+			for (int32_t j = 0; j < dataPartsCount; ++j)
 			{
 				cudaMemcpyAsync(dev_data2, data + ((j + 1) % dataPartsCount) * dataPartSize * dimension, dataPartSize * dimension * sizeof(value_t), cudaMemcpyHostToDevice);
 				findNearestClusterAtomicKernel << <nBlocksN, blockSizeN >> >(meansSize, dev_means, dev_meansSums, dataPartSize, dev_data1, dev_counts, dimension, dataPartsCount * j, dataSize);
@@ -281,7 +290,7 @@ cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t d
 			//cudaMemcpy(test, dev_counts, sizeof(uint32_t)* meansSize, cudaMemcpyDeviceToHost);
 			//std::vector<uint32_t> t(test, test + meansSize);
 			//uint32_t cSum = 0;
-			//for (size_t i = 0; i < t.size(); i++)
+			//for (int32_t i = 0; i < t.size(); i++)
 			//{
 			//	cSum += t[i];
 			//}
@@ -289,7 +298,7 @@ cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t d
 			//cudaStatus = cudaGetLastError();
 
 			//TO-DO ZLEPSIT! (jako atomicDivMeansKernel)
-			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
+			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			synchronizeDevice();
 
 			cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));

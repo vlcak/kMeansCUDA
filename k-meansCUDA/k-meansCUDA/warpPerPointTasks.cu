@@ -8,10 +8,13 @@
 #include <iostream>
 
 
-cudaError_t countKMeansWarpPerPoint(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansWarpPerPoint(const uint32_t iterations, const uint32_t dataSize_u32, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t* dev_means = 0, *dev_data = 0, *dev_meansSums = 0, *dev_temp = 0;
 	uint32_t* dev_assignedClusters = 0, *dev_counts = 0;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 	cudaError_t cudaStatus;
 
 	// Launch a kernel on the GPU with one thread for each element.
@@ -55,11 +58,11 @@ cudaError_t countKMeansWarpPerPoint(const uint32_t iterations, const uint32_t da
 
 		//int blockSizeM = 16;
 		//int nBlocksM = (meansSize - 1) / blockSizeM + 1;
-		for (uint32_t i = 0; i < iterations; ++i)
+		for (int32_t i = 0; i < iterations; ++i)
 		{
-			findNearestWarpPerPointKernel << <nBlocksN, blockSizeN, sharedMemomrySize >> >(meansSize, dev_means, dev_meansSums, dataSize, dev_data, dev_counts, dimension, 0, dataSize);
+			findNearestWarpPerPointKernel << <nBlocksN, blockSizeN, sharedMemomrySize >> >(meansSize, dev_means, dev_meansSums, dev_data, dev_counts, dimension, 0, dataSize);
 			synchronizeDevice();
-			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(meansSize, dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
+			countDivMeansKernel << <meansBlocks, meansPerBlock * dimension >> >(dev_counts, dev_means, dev_meansSums, dimension, meansPerBlock);
 			synchronizeDevice();
 
 			cudaMemset(dev_meansSums, 0, meansSize * dimension * sizeof(value_t));

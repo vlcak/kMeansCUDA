@@ -7,7 +7,7 @@ __device__  T min(T a, T b, int offset)
 }
 
 
-__global__ void findNearestWarpPerPointKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
+__global__ void findNearestWarpPerPointKernel(const my_size_t meansSize, const value_t *means, value_t *meansSums, const value_t* data, uint32_t* counts, const my_size_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
 	extern __shared__ value_t sharedArray[];
 	value_t* distances = (value_t*)&sharedArray[blockDim.x * threadIdx.y + threadIdx.x];
@@ -18,9 +18,9 @@ __global__ void findNearestWarpPerPointKernel(const uint32_t meansSize, const va
 		, minMeanId = threadIdx.x;
 	value_t distance = 0
 		, difference = 0;
-	//for (size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
+	//for (my_size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
 	//{
-	for (size_t d = 0; d < dimension; ++d)
+	for (my_size_t d = 0; d < dimension; ++d)
 	{
 		difference = means[threadIdx.x * dimension + d] - data[pointID * dimension + d];
 		distance += difference * difference;
@@ -34,7 +34,7 @@ __global__ void findNearestWarpPerPointKernel(const uint32_t meansSize, const va
 	//}
 	distances[threadIdx.x] = distance;
 	//minMeansIds[threadIdx.x] = minMeanID;
-	for (size_t t = 0; t < blockDim.x; ++t)
+	for (my_size_t t = 0; t < blockDim.x; ++t)
 	{
 		// <= guarantee that all threads will compute with same mean
 		if (distance >= distances[t])
@@ -49,13 +49,13 @@ __global__ void findNearestWarpPerPointKernel(const uint32_t meansSize, const va
 		atomicInc(&counts[minMeanId], INT_MAX);
 	}
 
-	for (size_t d = threadIdx.x; d < dimension; d += blockDim.x)
+	for (my_size_t d = threadIdx.x; d < dimension; d += blockDim.x)
 	{
 		atomicAdd(&meansSums[minMeanId * dimension + d], data[pointID * dimension + d]);
 	}
 }
 
-__global__ void findNearestWarpPerPointSMKernel(const uint32_t meansSize, const value_t *means, value_t *meansSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
+__global__ void findNearestWarpPerPointSMKernel(const my_size_t meansSize, const value_t *means, value_t *meansSums, const value_t* data, uint32_t* counts, const my_size_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
 	extern __shared__ value_t sharedArray[];
 	value_t* point = (value_t*)&sharedArray[threadIdx.y * dimension];
@@ -63,14 +63,14 @@ __global__ void findNearestWarpPerPointSMKernel(const uint32_t meansSize, const 
 	
 	unsigned int pointID = threadIdx.y + blockIdx.x * blockDim.x * blockDim.y
 		, minMeanId = threadIdx.x;
-	for (size_t d = 0; d < dimension; d += blockDim.x)
+	for (my_size_t d = 0; d < dimension; d += blockDim.x)
 	{
 		point[d] = data[pointID * dimension + d];
 	}
 	value_t distance = 0
 		, difference = 0;
 
-	for (size_t d = 0; d < dimension; ++d)
+	for (my_size_t d = 0; d < dimension; ++d)
 	{
 		difference = means[threadIdx.x * dimension + d] - point[d];
 		distance += difference * difference;
@@ -78,7 +78,7 @@ __global__ void findNearestWarpPerPointSMKernel(const uint32_t meansSize, const 
 	distances[threadIdx.x] = distance;
 
 	__syncthreads();
-	for (size_t t = 0; t < blockDim.x; ++t)
+	for (my_size_t t = 0; t < blockDim.x; ++t)
 	{
 		// <= guarantee that all threads will compute with same mean
 		if (distance >= distances[t])
@@ -93,19 +93,19 @@ __global__ void findNearestWarpPerPointSMKernel(const uint32_t meansSize, const 
 		atomicInc(&counts[minMeanId], INT_MAX);
 	}
 
-	for (size_t d = threadIdx.x; d < dimension; d += blockDim.x)
+	for (my_size_t d = threadIdx.x; d < dimension; d += blockDim.x)
 	{
 		atomicAdd(&meansSums[minMeanId * dimension + d], data[pointID * dimension + d]);
 	}
 }
 
-__global__ void findNearestWarpPerPointKernelShuffle(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
+__global__ void findNearestWarpPerPointKernelShuffle(const my_size_t meansSize, const value_t *means, value_t *measnSums, const value_t* data, uint32_t* counts, const my_size_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
 	int threadID = threadIdx.y + blockIdx.x * blockDim.x * blockDim.y;
 	value_t distance = 0, difference = 0;
-	for (size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
+	for (my_size_t m = threadIdx.x; m < meansSize; m += blockDim.x)
 	{
-		for (size_t d = 0; d < dimension; ++d)
+		for (my_size_t d = 0; d < dimension; ++d)
 		{
 			difference = means[m * dimension + d] - data[threadID * dimension + d];
 			distance += difference * difference;

@@ -8,10 +8,13 @@
 #include <iostream>
 
 
-cudaError_t countKMeansWarpPerMean(const uint32_t iterations, const uint32_t dataSize, const value_t* data, const uint32_t meansSize, value_t* means, uint32_t* assignedClusters, uint64_t dimension)
+cudaError_t countKMeansWarpPerMean(const uint32_t iterations, const uint32_t dataSize_u32, const value_t* data, const uint32_t meansSize_u32, value_t* means, uint32_t* assignedClusters, uint64_t dimension_u64)
 {
 	value_t *dev_means = 0, *dev_data = 0, *dev_distances = 0, *dev_temp = 0;
 	uint32_t *dev_assignedClusters = 0, *dev_counts = 0, *dev_locks = 0;
+	const my_size_t dataSize = static_cast<my_size_t>(dataSize_u32);
+	const my_size_t meansSize = static_cast<my_size_t>(meansSize_u32);
+	const my_size_t dimension = static_cast<my_size_t>(dimension_u64);
 
 	// Launch a kernel on the GPU with one thread for each element.
 	dim3 blockSizeN = BLOCK_SIZE;

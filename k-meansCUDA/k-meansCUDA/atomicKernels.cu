@@ -1,15 +1,15 @@
 #include "atomicKernels.cuh"
 
 
-__global__ void findNearestClusterAtomicKernel(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
+__global__ void findNearestClusterAtomicKernel(const my_size_t meansSize, const value_t *means, value_t *measnSums, const my_size_t dataSize, const value_t* data, uint32_t* counts, const my_size_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
 	int clusterID = -1;
-	for (size_t i = 0; i < meansSize; ++i)
+	for (my_size_t i = 0; i < meansSize; ++i)
 	{
 		distance = 0;
-		for (size_t j = 0; j < dimension; ++j)
+		for (my_size_t j = 0; j < dimension; ++j)
 		{
 			difference = means[i * dimension + j] - data[id * dimension + j];
 			distance += difference * difference;
@@ -24,22 +24,22 @@ __global__ void findNearestClusterAtomicKernel(const uint32_t meansSize, const v
 	{
 		atomicInc(&counts[clusterID], INT_MAX);
 		//assignedClusters[id] = clusterID;
-		for (size_t j = 0; j < dimension; ++j)
+		for (my_size_t j = 0; j < dimension; ++j)
 		{
 			atomicAdd(&measnSums[clusterID * dimension + j], data[id * dimension + j]);
 		}
 	}
 }
 
-__global__ void findNearestClusterAtomicKernelTransposed(const uint32_t meansSize, const value_t *means, value_t *measnSums, const uint32_t dataSize, const value_t* data, uint32_t* counts, const uint32_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
+__global__ void findNearestClusterAtomicKernelTransposed(const my_size_t meansSize, const value_t *means, value_t *measnSums, const my_size_t dataSize, const value_t* data, uint32_t* counts, const my_size_t dimension, const uint32_t dataOffset, const uint32_t totalDataSize)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	value_t minDistance = LLONG_MAX, distance = 0, difference = 0;
 	int clusterID = -1;
-	for (size_t i = 0; i < meansSize; ++i)
+	for (my_size_t i = 0; i < meansSize; ++i)
 	{
 		distance = 0;
-		for (size_t j = 0; j < dimension; ++j)
+		for (my_size_t j = 0; j < dimension; ++j)
 		{
 			difference = means[i * dimension + j] - data[j * dataSize + id];
 			distance += difference * difference;
@@ -54,14 +54,14 @@ __global__ void findNearestClusterAtomicKernelTransposed(const uint32_t meansSiz
 	{
 		atomicInc(&counts[clusterID], INT_MAX);
 		//assignedClusters[id] = clusterID;
-		for (size_t j = 0; j < dimension; ++j)
+		for (my_size_t j = 0; j < dimension; ++j)
 		{
 			atomicAdd(&measnSums[clusterID * dimension + j], data[j * dataSize + id]);
 		}
 	}
 }
 
-__global__ void countDivMeansKernel(const uint32_t meansSize, const uint32_t* counts, value_t* means, const value_t* meansSums, const uint32_t dimension, const uint32_t meansPerBlock)
+__global__ void countDivMeansKernel(const uint32_t* counts, value_t* means, const value_t* meansSums, const my_size_t dimension, const uint32_t meansPerBlock)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
