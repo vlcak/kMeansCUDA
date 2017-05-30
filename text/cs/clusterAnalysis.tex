@@ -153,7 +153,7 @@ Propojování objektů do shluků může být problematické. Shluk totiž můž
 \item[Maximální nebo úplná vazba shluků] $$\max\{d(a,b) : a~\in A, b \in B\}$$
 \item[Minimální nebo jedinečná vazba shluků] $$\min\{d(a,b) : a~\in A, b \in B\}$$
 \item[Průměr, průměrná shluková vazba nebo UPGMA] (Unweighted Pair Group Method with Arithmetic Mean) $$\frac{1}{|A||B|}\sum_{a \in A} \sum_{b \in B} d(a,b)$$
-\item[Centroidová vazba shluků nebo UPGMC] (Unweighted Pair-Group Method using Centroids) $$\|c_a - c_b\| \mbox{ kde } c_a \mbox{ a } c_b \mbox{ jsou centroidy shluků } A \mbox{ and } B$$
+\item[Centroidová vazba shluků nebo UPGMC] (Unweighted Pair-Group Method using Centroids) $$\|c_a - c_b\| \mbox{ kde } c_a \mbox{ a } c_b \mbox{ jsou centroidy shluků } A \mbox{ a } B$$
 Toto může vypadat jako shlukování založené na centroidech, ale jde pouze o~kritérium vazby a~výsledkem jsou hierarchicky uspořádané shluky.
 \item[Minimální shluková energie] $$\frac{2}{|A||B|}\sum_{i,j=1}^{|A|,|B|}\|a_i-b_j\|_2-\frac{1}{n^2}\sum_{i,j=1}^{|A|}\|a_i-a_j\|_2-\frac{1}{|B|^2}\sum_{i,j=1}^{m}\|b_{i}-b_{j}\|_{2} : a \in A, b \in B$$
 \end{description}
@@ -178,7 +178,7 @@ Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algo
 \end{description}
 
 \section{K-Means} 
-Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nej\-vše\-stra\-něj\-ších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se zvolili algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
+Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nej\-vše\-stra\-něj\-ších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolilt algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
 
 \subsection{Definice}
 K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus využívající shlukový model založený na centroidech. Vstupem je množina $n$ bodů v~$d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a~volitelném počtu iterací $i$.
@@ -202,7 +202,7 @@ Protože v~prvním kroku neznáme centroidy, často se jako počáteční hodnot
 Složitost výpočtu je $O(n*k*i*d)$, kde $n$ je počet vstupních bodů, $k$ je počet clusterů, $i$ je počet iterací a~$d$ je dimenze vstupních dat. \\
 
 \subsection{Měření kvality}
-Abychom mohli vyhodnotit výstup k-means, musíme uměnit měřit kvalitu přiřazení do shluků. Pro tento účel se nejčastěji používá funkce \textbf{Sum of Squared Error (SSE)}. Chyba jednoho bodu je reprezentována vzdáleností od centroidu daného shluku a~funkce SSE pak sčítá čtverce chyb jednotlivých bodů.
+Abychom mohli vyhodnotit výstup k-means, musíme umět měřit kvalitu přiřazení do shluků. Pro tento účel se nejčastěji používá funkce \textbf{Sum of Squared Error (SSE)}. Chyba jednoho bodu je reprezentována vzdáleností od centroidu daného shluku a~funkce SSE pak sčítá čtverce chyb jednotlivých bodů.
 $$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }$$
 Pokud dostáváme výsledky se špatným $SSE$, můžeme jej snížit například zvýšením počtu shluků $k$, ale pokud jsou počáteční shluky vybrány špatně, nemusí to pomoci.\\
 
@@ -212,7 +212,7 @@ Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu,
 Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteční body~\cite{Tan05}:
 \begin{description}
 \item[více běhů] k-means je spuštěn několikrát s~různými počátečními body a~jako výstup je vybrán nejlepší výsledek.
-\item[vzorkování] Počáteční cenroidy jsou vybrány na základě ovzorkování vstupních dat hierarchicjým shlukování.
+\item[vzorkování] Počáteční cenroidy jsou vybrány na základě ovzorkování vstupních dat hierarchickým shlukování.
 \item[více centroidů] Je vybráno více centroidů než je vstupní $k$ a~z nich se vyberou ty nejlépe rozmístěné.
 \item[následné zpracování] Výsledek algoritmu je následné zpracován - Shluky s~nej\-vyš\-ším $SSE$ jsou rozděleny a~na druhou stranu shluky s~nejnižším $SSE$ mohou být spojeny.
 \end{description} 
@@ -290,7 +290,7 @@ Protože k-means jsou univerzálním algoritmem, existují různé varianty pro 
 \item[k-medoids] - centroidy nejsou uměle vytvořené body v~prostoru $R^d$, ale reálné body ze vstupních dat, jejichž průměrná odchylka od ostatních bodů ve shluku je minimální (místo průměru se využívá medián).
 \item[k-medians] - stejný algoritmus jako k-means, ale pro výpočet nového centroidu se pro každou dimenzi využívá medián místo výpočtu průměrné hodnoty.
 \item[k-means++] - Počáteční centroidy jsou vybrány náhodně. Tím lze zabránit potenciálním špatným vstupům.
-\item[Fuzzy K-means] - jsou povoleny neostré shluky~\ref{sec:clusterorganization}. Objekty nepatří striktně jednomu shluku, ale uvažujeme stupeň náležení k~jednotlivých shlukům. Pro výpočet nových centroidů se využívá vážený průměr (kde je jako váha brán stupeň náležení).
+\item[Fuzzy K-means] - jsou povoleny neostré shluky~\ref{sec:clusterorganization}. Objekty nepatří striktně jednomu shluku, ale využíváme stupeň náležení k~jednotlivým shlukům. Pro výpočet nových centroidů se využívá vážený průměr (kde je jako váha brán stupeň náležení).
 \item[Rozdělující (Bisecting) k-means]~\cite{Tan05} je varianta k-means, která produkuje hierarchické uspořádání shluků. Pracuje, stejně jako k-means, iterativně, ale v~každém kroku je shluk s~nejvyšším $SSE$ rozdělen na 2 pomocí klasického k-means algoritmu s~parametrem $k=2$. Algoritmus iteruje, dokud nedosáhne daného počtu shluků~\autoref{alg:bisectingkmeans}.
 \begin{algorithm}
 \caption{Rozdělující k-means}\label{alg:bisectingkmeans}
@@ -302,7 +302,7 @@ Protože k-means jsou univerzálním algoritmem, existují různé varianty pro 
 \State Rozděl vybraný shluk pomocí základního k-means algoritmu
 \EndFor
 \State Přidej dva shluky vzniklé rozdělením s~nejnižším SSE do seznamu shluků
-\State Aktualizuj centroidy pro každá shluk
+\State Aktualizuj centroidy pro každý shluk
 \Until{seznam shluků obsahuje k~shluků}
 \end{algorithmic}
 \end{algorithm}
