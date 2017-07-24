@@ -4,39 +4,61 @@
 #include "cuda_runtime.h"
 #include <exception>
 
-class CUDASetDeviceException : public std::exception
-{
-	virtual const char* what() const throw();
-};
-
-class CUDAMemoryAllocationException : public std::exception
-{
-	virtual const char* what() const throw();
-};
-
-class CUDAMemoryCopyException : public std::exception
-{
-	virtual const char* what() const throw();
-};
-
-class CUDASyncException : public std::exception
-{
-	virtual const char* what() const throw();
-};
-
-class CUDAKernelException : public std::exception
-{
-	virtual const char* what() const throw();
-};
-
-class CUDAGeneralException : public std::exception
+class ICUDAException : public std::exception
 {
 public:
-	CUDAGeneralException(cudaError_t cudaErrorP);
-	virtual const char* what() const throw() override;
-	cudaError_t getError();
+    virtual const char* what() const throw() = 0;
+    virtual cudaError_t getError() { return cudaSuccess; }
+};
+
+class CUDASetDeviceException : public ICUDAException
+{
+public:
+    virtual const char* what() const throw();
+};
+
+class CUDAMemoryAllocationException : public ICUDAException
+{
+public:
+    virtual const char* what() const throw();
+};
+
+class CUDAMemorySettingException : public ICUDAException
+{
+public:
+    virtual const char* what() const throw();
+};
+
+class CUDAMemoryCopyException : public ICUDAException
+{
+public:
+    virtual const char* what() const throw();
+};
+
+class CUDASyncException : public ICUDAException
+{
+public:
+    CUDASyncException(cudaError_t cudaError);
+    virtual const char* what() const throw();
+    cudaError_t getError();
 private:
-	cudaError_t cudaError;
+    cudaError_t cudaError;
+};
+
+class CUDAKernelException : public ICUDAException
+{
+public:
+    virtual const char* what() const throw();
+};
+
+class CUDAGeneralException : public ICUDAException
+{
+public:
+    CUDAGeneralException(cudaError_t cudaError);
+    virtual const char* what() const throw() override;
+    cudaError_t getError();
+private:
+    cudaError_t cudaError;
 };
 
 #endif //CUDA_EXCEPTION_H

@@ -2,104 +2,112 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <CudaCompile Include="atomicKernels.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="simpleKernels.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="manyDimensionsKernels.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="fewMeansKernels.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="atomicTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="fewMeansTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="simpleTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="manyDimensionsTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="warpPerPointTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="warpPerPointKernel.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
     <CudaCompile Include="warpPerMeanTasks.cu">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </CudaCompile>
     <CudaCompile Include="warpPerMeanKernel.cu">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atomicTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="fewMeansTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="simpleTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="atomicKernels.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="fewMeansKernels.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="manyDimensionsKernels.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="simpleKernels.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="manyDimensionsTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="baseKernel.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="warpPerPointTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="warpPerPointKernel.cuh">
-      <Filter>CUDAKernels</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="warpPerMeanTasks.cuh">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\Tasks</Filter>
     </ClInclude>
     <ClInclude Include="warpPerMeanKernel.cuh">
-      <Filter>CUDAKernels</Filter>
-    </ClInclude>
-    <ClInclude Include="helpers.h">
-      <Filter>Tasks</Filter>
+      <Filter>CUDA\CUDAKernels</Filter>
     </ClInclude>
     <ClInclude Include="cudaException.h">
-      <Filter>Tasks</Filter>
+      <Filter>C++</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Tasks">
+    <Filter Include="CUDA">
+      <UniqueIdentifier>{f8d404d7-f202-4bdf-b88d-9bb03b0f1526}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CUDA\Tasks">
       <UniqueIdentifier>{b22f3465-ebde-47ee-99fb-0ce08cabb84a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CUDAKernels">
+    <Filter Include="CUDA\CUDAKernels">
       <UniqueIdentifier>{5d8332c0-bd4b-4bfc-9c99-7ba077466c84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="C++">
+      <UniqueIdentifier>{1f3d3525-fc4b-4319-8aba-833b2d703218}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="helpers.cpp">
-      <Filter>Tasks</Filter>
-    </ClCompile>
     <ClCompile Include="cudaExceptions.cpp">
-      <Filter>Tasks</Filter>
+      <Filter>C++</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers.cpp">
+      <Filter>C++</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>C++</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

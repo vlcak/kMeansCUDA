@@ -10,10 +10,14 @@ typedef float value_t;
 typedef int32_t my_size_t;
 typedef unsigned char cluster_t;
 
-const int BLOCK_SIZE = 64;
+const int BLOCK_SIZE = 256;
 const int WARP_SIZE = 32;
 #ifdef __CUDACC__
-#pragma message "using nvcc"
+#pragma message "CUDA code"
+#else
+#pragma message "non-CUDA code"
+#endif
+
 #ifdef __CUDA_ARCH__
 #pragma message "device code trajectory"
 #if __CUDA_ARCH__ < 300
@@ -23,9 +27,8 @@ const int WARP_SIZE = 32;
 #else
 #pragma message "compiling for Maxwell"
 #endif
-#endif
 #else
-#pragma message "non - nvcc code trajectory"
+#pragma message "__CUDA_ARCH__ not defined"
 #endif
 
 #endif //BASEKERNEL_H

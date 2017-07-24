@@ -3,40 +3,54 @@
 
 const char* CUDASetDeviceException::what() const throw()
 {
-	return "CUDA set device failed";
+    return "CUDA set device failed";
 }
 
 const char* CUDAMemoryAllocationException::what() const throw()
 {
-	return "CUDA memory allocation failed";
+    return "CUDA memory allocation failed";
 }
 
-const char*CUDAMemoryCopyException::what() const throw()
+const char* CUDAMemorySettingException::what() const throw()
 {
-	return "CUDA memory copy failed";
+    return "CUDA memory setting failed";
 }
 
+const char* CUDAMemoryCopyException::what() const throw()
+{
+    return "CUDA memory copy failed";
+}
+
+CUDASyncException::CUDASyncException(cudaError_t p_cudaError)
+{
+    cudaError = p_cudaError;
+}
 
 const char* CUDASyncException::what() const throw()
 {
-	return "CUDA device synchronization failed";
+    return "CUDA device synchronization failed: " + cudaError;
+}
+
+cudaError_t CUDASyncException::getError()
+{
+    return cudaError;
 }
 
 const char* CUDAKernelException::what() const throw()
 {
-	return "CUDA kernel failed";
+    return "CUDA kernel failed";
 }
 
-CUDAGeneralException::CUDAGeneralException(cudaError_t cudaErrorP)
+CUDAGeneralException::CUDAGeneralException(cudaError_t p_cudaError)
 {
-	cudaError = cudaErrorP;
+    cudaError = p_cudaError;
 }
 const char* CUDAGeneralException::what() const throw()
 {
-	return cudaGetErrorString(cudaError);
+    return cudaGetErrorString(cudaError);
 }
 
 cudaError_t CUDAGeneralException::getError()
 {
-	return cudaError;
+    return cudaError;
 }
