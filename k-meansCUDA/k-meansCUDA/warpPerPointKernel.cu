@@ -69,7 +69,7 @@ __global__ void findNearestWarpPerPointSMKernel(const value_t* __restrict__ mean
     unsigned int pointID = threadIdx.y + blockIdx.x * blockDim.x * blockDim.y
         , minMeanId = threadIdx.x;
 
-    // point is copied to shared memory - coalesced acces to global memory
+    // point is copied to shared memory - coalesced acces to global memory, bank-safe save to shared
     for (my_size_t d = threadIdx.x; d < dimension; d += blockDim.x)
     {
         point[d] = data[pointID * dimension + d];

@@ -19,7 +19,7 @@ cudaError_t countKMeansSimple(const uint32_t iterations, const uint32_t dataSize
     // Launch a kernel on the GPU with one thread for each element.
     int blockSizeN = BLOCK_SIZE;
     int nBlocksN = (dataSize - 1) / blockSizeN + 1;
-    int meansPerBlock = BLOCK_SIZE / dimension;
+	int meansPerBlock = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
     dim3 blockSizeM(dimension, meansPerBlock);
     int nBlocksM = (meansSize - 1) / blockSizeM.y + 1;
 

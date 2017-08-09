@@ -21,7 +21,7 @@ cudaError_t countKMeansAtomic(const uint32_t iterations, const uint32_t dataSize
     int nBlocksN = (dataSize - 1) / blockSizeN + 1;
 
     // for DivMeansKernel
-    int meansPerBlock = BLOCK_SIZE / dimension;
+	int meansPerBlock = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
     int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
 	auto findNearestClusterKernel = &findNearestClusterAtomicKernel;
@@ -272,7 +272,7 @@ cudaError_t countKMeansBIGDataAtomic(const uint32_t iterations, const uint32_t d
     //int nBlocksM = (meansSize - 1) / blockSizeM + 1;
 
     // for DivMeansKernel
-    int meansPerBlock = BLOCK_SIZE / dimension;
+	int meansPerBlock = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
     int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
     clock_t start, end;

@@ -21,7 +21,7 @@ cudaError_t countKMeansManyDims(const uint32_t iterations, const uint32_t dataSi
     dim3 blockGrid(WARP_SIZE, pointsPerBlock);
 
     // for DivMeansKernel
-    int meansPerBlock = BLOCK_SIZE / dimension;
+	int meansPerBlock = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
     int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
     //uint32_t* testAssigned,* testCounts;

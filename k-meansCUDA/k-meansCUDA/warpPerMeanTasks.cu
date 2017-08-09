@@ -32,7 +32,7 @@ cudaError_t countKMeansWarpPerMean(const uint32_t iterations, const uint32_t dat
 #endif
 
     // for DivMeansKernel
-    dim3 blockSizeMeans(dimension, BLOCK_SIZE / dimension);
+	dim3 blockSizeMeans(dimension, BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1);
 
     int gridSizeMeans = (meansSize - 1) / blockSizeMeans.y + 1;
 

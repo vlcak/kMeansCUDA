@@ -33,7 +33,7 @@ cudaError_t countKMeansFewMeans(const uint32_t iterations, const uint32_t dataSi
 
     dim3 blockSizeMeans;
     blockSizeMeans.x = dimension;
-    blockSizeMeans.y = BLOCK_SIZE / dimension;
+    blockSizeMeans.y = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
 
     clock_t start, end;
     start = clock();
@@ -270,7 +270,7 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
     cudaError_t cudaStatus = cudaSuccess;
 
     dim3 blockSizeN(BLOCK_SIZE / sharedRedundancy, sharedRedundancy);
-    dim3 nBlocksN(((dataSize - 1) / BLOCK_SIZE / globalRedundancy) + 1, globalRedundancy);
+    dim3 nBlocksN((((dataSize - 1) / (blockSizeN.x * blockSizeN.y) ) / globalRedundancy) + 1, globalRedundancy);
 
     //uint32_t* testAssigned, *testCounts;
     //value_t* testDistances;
@@ -296,7 +296,10 @@ cudaError_t countKMeansFewMeansV3(const uint32_t iterations, const uint32_t data
     //uint32_t reductionThreadCount = (uint32_t)pow(2, floor(log2((float)globalRedundancy)));
 
     dim3 reductionThreadBlock(dimension, globalRedundancy);
-    reductionThreadBlock.z = BLOCK_SIZE / (reductionThreadBlock.x * reductionThreadBlock.y);
+	reductionThreadBlock.z =
+		BLOCK_SIZE > (reductionThreadBlock.x * reductionThreadBlock.y)
+		? BLOCK_SIZE / (reductionThreadBlock.x * reductionThreadBlock.y)
+		: 1;
     int reductionBlocksN = (meansSize - 1) / reductionThreadBlock.z + 1;
 
     clock_t start, end;

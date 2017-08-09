@@ -18,15 +18,15 @@ cudaError_t countKMeansWarpPerPoint(const uint32_t iterations, const uint32_t da
     cudaError_t cudaStatus = cudaSuccess;
 
     // Launch a kernel on the GPU with one thread for each element.
-    int pointsPerWarp = BLOCK_SIZE / meansSize;
-    dim3 blockSizeN(meansSize, pointsPerWarp);
-    int nBlocksN = (dataSize - 1) / pointsPerWarp + 1;
+	int pointsPerBlock= BLOCK_SIZE > meansSize ? WARP_SIZE / meansSize : 1;
+	dim3 blockSizeN(meansSize, pointsPerBlock);
+	int nBlocksN = (dataSize - 1) / pointsPerBlock + 1;
     auto findNearestClusterKernel = &findNearestWarpPerPointKernel;
     int sharedMemomrySize = sizeof(value_t)* (/*dimension * pointsPerWarp + */blockSizeN.x * blockSizeN.y);
     if (version == "--sharedMemory")
     {
         findNearestClusterKernel = &findNearestWarpPerPointSMKernel;
-        sharedMemomrySize = sizeof(value_t)* (dimension * pointsPerWarp + blockSizeN.x * blockSizeN.y);
+		sharedMemomrySize = sizeof(value_t)* (dimension * pointsPerBlock + blockSizeN.x * blockSizeN.y);
         std::cout << "Shared memory" << std::endl;
     }
 #if __CUDA_ARCH__ >= 300
@@ -39,7 +39,7 @@ cudaError_t countKMeansWarpPerPoint(const uint32_t iterations, const uint32_t da
 #endif
 
     // for DivMeansKernel
-    int meansPerBlock = BLOCK_SIZE / dimension;
+	int meansPerBlock = BLOCK_SIZE > dimension ? BLOCK_SIZE / dimension : 1;
     int meansBlocks = (meansSize - 1) / meansPerBlock + 1;
 
 
