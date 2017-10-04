@@ -1,22 +1,25 @@
 \chapter{Shluková analýza} \label{sec:clusteranalysis}
-Shluková analýza je možná jeden z~nevíce zkoumaných problémů v~oblasti strojového učení a~dolování dat~\cite{Aggarwal13}. Lze ji využít ve velkém množství oborů a~disciplín jako například sumarizace a~segmentace dat, cílený marketing a~nebo již zmíněné strojové učení~\cite{Jain10, Kaufman90}. Základní problém shlukování se dá formulovat následovně: \textit{Máme množinu vstupních bodů, snažíme se je rozdělit tak, aby skupiny obsahovaly co nejpodobnější body.} Tato definice je velmi vágní, protože se různé definice problému velice liší v~závislosti na specifických vlastnostech použitých modelů dat~\cite{Aggarwal13}. Pokud uvážíme například generační model dat, budeme pravděpodobně využívat podobnost založenou na genetických mechanismech, kdežto podobnost založenou na vzdálenosti budeme používat především u~obecných modelů založených na číslech. Velký vliv na definici shlukové analýzy mají také vlastnosti vstupních dat.
+Shluková analýza je možná jeden z~nevíce zkoumaných problémů v~oblasti strojového učení a~dolování dat~\cite{Aggarwal13}. Lze ji využít ve velkém množství oborů a~disciplín jako například sumarizace a~segmentace dat, cílený marketing a~nebo již zmíněné strojové učení~\cite{Jain10, Kaufman90}. Základní problém shlukování můžeme formulovat následovně: \textit{Máme množinu vstupních bodů, snažíme se je rozdělit tak, aby skupiny obsahovaly co nejpodobnější body.} Tato formulace je záměrně vágní, protože se různé definice problému velice liší v~závislosti na specifických vlastnostech dat, které se snažíme zařadit do shluků~\cite{Aggarwal13}. 
 
 \section{Definice}
-Vzhledem k~tomu, že shluková analýza je velmi různorodá, zahrnuje mnoho algoritmů, které se mohou značně lišit. Ty závisí na datovém modelu a~konkrétní úloze~\cite{Aggarwal13}. Velice se také liší v~definici shluku a~v metodách hledání shluků. Mezi nejčastější definice shluků patří následující: Skupiny s~malou vzdá\-le\-nos\-tí mezi objekty ze stejného shluku, husté oblasti vstupních dat, intervaly nebo jednotlivé statistické distribuce.\\
+Jelikož je shluková analýza velmi různorodá, zahrnuje mnoho algoritmů, které se mohou značně lišit, protože závisí na datovém modelu a~konkrétní úloze~\cite{Aggarwal13}. Velice se také liší v~definici shluku a~v metodách hledání shluků. Mezi nejčastější definice shluků patří například shluky s~malou vzdá\-le\-nos\-tí mezi objekty jednoho shluku nebo husté oblasti vstupních dat.\\
 
-Samotná shluková analýza by mohla být provedena na mnoha typech dat, ale v~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Množina vektorů $V$ nad polem $F$ musí splňovat axiomy vektorového prostoru s~operacemi $\oplus: V \times V \to V$ zvané sčítání a~$\otimes:F \times V \to V$ zvané násobení:
-\begin{enumerate}
-\item $(\forall \vec{u}, \vec{v} \in V):\vec{u} \oplus \vec{v} = \vec{v} \oplus \vec{u}$ \textit{(komutativita pro sčítání vektorů)}
-\item $(\forall \vec{u}, \vec{v}, \vec{w} \in V):(\vec{u} \oplus \vec{v}) \oplus \vec{w} = \vec{u} \oplus (\vec{v} \oplus \vec{w})$ \textit{(asociativita pro sčítání vektorů)}
-\item $(\exists \vec{0})(\forall \vec{v} \in V):\vec{v} \oplus \vec{0} = \vec{v}$ \textit{(existence nulového vektoru)}
-\item $(\forall \vec{u} \in V)(\exists \vec{v} \in V):\vec{u} \oplus \vec{v} = \vec{0}$ \textit{(existence opačného vektoru)}
-\item $(\forall a,b \in F)(\forall \vec{v} \in V):(a \otimes b) \otimes \vec{v} = a \otimes (b \otimes \vec{v})$ \textit{(asociativita pro násobení vektoru)}
-\item $(\exists \textbf{1} \in F)(\forall \vec{v} \in V):\textbf{1} \otimes \vec{v} = \vec{v}$ \textit{(invariance vektoru při vynásobení jednotkovým prvkem tělesa)}
-\item $(\forall a,b \in F)(\forall \vec{v} \in V):(a + b) \otimes \vec{v} = (a \otimes \vec{v}) \oplus (b \otimes \vec{v})$ \textit{(distributivita násobení vektoru vzhledem ke sčítání prvků tělesa)}
-\item $(\forall a \in F)(\forall \vec{u}, \vec{v} \in V):a \otimes (\vec{u} \oplus \vec{v}) = (a \otimes \vec{u}) \oplus (a \otimes \vec{v})$ \textit{(distributivita násobení vektoru vzhledem ke sčítání vektorů)}
-\end{enumerate}
+Velice také záleží na typu vstupních dat, kterých může být také široké množství. V~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
 
-Musíme mít také nějakou metrickou funkci $d:V \times V \to F$, která splňuje axiomy metriky:\\ \\
+%Množina vektorů $V$ nad polem $F$ musí splňovat axiomy vektorového prostoru s~operacemi $\oplus: V \times V \to V$ zvané sčítání a~$\otimes:F \times V \to V$ zvané násobení:
+%\begin{enumerate}
+%\item $(\forall \vec{u}, \vec{v} \in V):\vec{u} \oplus \vec{v} = \vec{v} \oplus \vec{u}$ \textit{(komutativita pro sčítání vektorů)}
+%\item $(\forall \vec{u}, \vec{v}, \vec{w} \in V):(\vec{u} \oplus \vec{v}) \oplus \vec{w} = \vec{u} \oplus (\vec{v} \oplus \vec{w})$ \textit{(asociativita pro sčítání vektorů)}
+%\item $(\exists \vec{0})(\forall \vec{v} \in V):\vec{v} \oplus \vec{0} = \vec{v}$ \textit{(existence nulového vektoru)}
+%\item $(\forall \vec{u} \in V)(\exists \vec{v} \in V):\vec{u} \oplus \vec{v} = \vec{0}$ \textit{(existence opačného vektoru)}
+%\item $(\forall a,b \in F)(\forall \vec{v} \in V):(a \otimes b) \otimes \vec{v} = a \otimes (b \otimes \vec{v})$ \textit{(asociativita pro násobení vektoru)}
+%\item $(\exists \textbf{1} \in F)(\forall \vec{v} \in V):\textbf{1} \otimes \vec{v} = \vec{v}$ \textit{(invariance vektoru při vynásobení jednotkovým prvkem tělesa)}
+%\item $(\forall a,b \in F)(\forall \vec{v} \in V):(a + b) \otimes \vec{v} = (a \otimes \vec{v}) \oplus (b \otimes \vec{v})$ \textit{(distributivita násobení vektoru vzhledem ke sčítání prvků tělesa)}
+%\item $(\forall a \in F)(\forall \vec{u}, \vec{v} \in V):a \otimes (\vec{u} \oplus \vec{v}) = (a \otimes \vec{u}) \oplus (a \otimes \vec{v})$ \textit{(distributivita násobení vektoru vzhledem ke sčítání vektorů)}
+%\end{enumerate}
+
+\subsection{Vzdálenost}
+Různorodost vstupních dat se odráží v~širokém rozsahu použitelných funkcí pro výpočet vzdálenosti (nebo podobnosti), protože konkrétní typ dat vyžaduje specifickou metriku. Vzdálenost je pro shlukovou analýzu velmi důležitá, protože často určuje, zda je shluková analýza použitelná na konkrétní typ dat. Obecně nám stačí, když bude naše vzdálenostní funkce $d:V \times V \to F$ splňovat axiomy metriky:\\ \\
 $ \forall  u, v, w \in V$
 \begin{enumerate}
 \item $d(u, v)\geq 0$ \textit{(nezápornost)}
@@ -25,57 +28,12 @@ $ \forall  u, v, w \in V$
 \item$d(u, v) \leq d(u, w) + d(w, v)$ \textit{(trojúhelníková nerovnost)}
 \end{enumerate}
 
-Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
-
-\subsection{Vzdálenosti}
-Jak jsme se zmínili na začátku této části, shluková analýza by mohla být provedena na mnoha typech dat. Tato různorodost se odráží v~širokém rozsahu použitelných funkcí pro výpočet vzdálenosti (nebo podobnosti), protože konkrétní typ dat vyžaduje specifickou metriku. Vzdálenost je pro shlukovou analýzu velmi důležitá, protože často určuje, zda je shluková analýza použitelná na konkrétní typ dat. Jelikož se v~této práci budeme věnovat především vektorovým prostorům, začneme s~obecnou normovanou vzdáleností použitelnou v~tomto prostoru:
-$$L_p(a, b)=\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|^p} $$
+ Jelikož se v~této práci budeme věnovat především vektorovým prostorům, začneme s~obecnou normovanou vzdáleností použitelnou v~tomto prostoru:
+$$L_p(a, b)=\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|\strut^p} $$
 Nejčastěji používaná vzdálenost $L_p$ je vzdálenost $L_2$ vzdálenost zvaná \textbf {Eukleidovská} nebo $L_1$ zvaná \textbf {Manhattanská vzdá\-le\-nost}.
-Protože výpočty odmocnin v~$L_2$ jsou obtížné, mohli bychom zjednodušit vzdálenost tím, že vynecháme výpočet odmocnin. Tato optimalizace neporušuje metrické axiomy a~v případě $L_2$ se obvykle nazývá \textbf {čtvercová eukleidovská vzdálenost}.\\
+Při bližším nahlédnutí zjistíme, výpočty odmocnin v~$L_2$ jsou zbytečné a mohli bychom jejich výpočet vynechat. Takto vzniklá funkce je také metrikou (neporušuje metrické axiomy), značí se $L_2^2$  a~v případě $L_2$ se obvykle nazývá \textbf {čtvercová eukleidovská vzdálenost}.\\
 
-Pro další datové typy uvádíme několik příkladů metrik nad nevektorovými prostory. Můžeme například použít vzdálenost použitelnou ve statistice, jako je \textbf{Mahalanobisova vzdálenost} a~\textbf{Wassersteinova metrika}
-
-\subsubsection{Mahalanobisova vzdálenost}
-Je užitečná, pokud potřebujeme vypočítat vzdálenosti mezi bodem $ P$ a~distribucí $D$. Hlavní myšlenka této vzdálenosti je měření odlišnosti $P$ od průměru $D$.
-Pokud máme pozorování $p = (p_1,..., p_n)^T$ a~střední hodnotu pozorování $\mu=(\mu_1,...,\mu_n)^T $ a~matici kovariance $S$, Mahalanobisova vzdálenost je definována jako:
-$$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
-
-\subsubsection{Wassersteinova metrika}
-Další vzdálenost použitá ve statistice je Wassersteinova metrika (nazývaná též Earth mover's distance (EMD))~\cite{Vallender73}. Tato metrika se používá pro výpočet vzdá\-le\-nos\-ti mezi dvěma pravděpodobnostními distribucemi na daném metrickém prostoru $M$. Jak název napovídá, existuje analogie s~posouváním "zeminy" nahromaděné stejným způsobem, jako je tvar distribuce pravděpodobnosti. Vzdálenost je množství "zeminy", které musí být přemístěno tak, aby se změnil tvar hromady na jiný tvar určený rozložením druhé pravděpodobnosti. Množství je pak ještě potřeba vynásobit vzdáleností, o~kterou je třeba zeminu přesunout. Tato vzdálenost je definována takto: \\
-Nechť $X$ je metrický prostor s~metrikou $\rho$ a~$\mathfrak {B}$ je $\sigma$-algebra Borelovských podmnožin $X$. Wassersteinova vzdálenost $R(P, Q)$ mezi rozdělení pravděpodobnosti $P$ a~$Q$ na $(X, \mathfrak{B}) $ je definována jako:
-$$R(P,Q)=\inf\mathbf{E}\rho(\xi, \sigma)$$
-kde $\inf$ se bere  ze všech možných dvojic náhodných proměnných $\xi$ a~$\sigma$ s~distribucí $P$ a~$Q$.\\
-
-Existují také prostory, které nemají s~matematikou mnoho společného, ale obsahují objekty, které jsou porovnatelné.
-
-\subsubsection{Levenshteinova vzdálenost} Levenshteinova vzdálenost se používá k~výpočtu editační vzdálenosti mezi dvěma řetězci $ a, b $ a~je rekurzivně definována podle následující definice:
-\begin{equation*}
-lev_{a,b}(i,j)=
-\begin{cases}
-max(i,j) & $if $ min(i,j)=0, \cr
-min \begin{cases}
-lev_{a,b}(i-1,j) + 1 \cr
-lev_{a,b}(i,j-1) + 1 \cr
-lev_{a,b}(i-1,j-1) + dif(a_i,b_j)
-\end{cases} & $jinak$
-\end{cases}
-\end{equation*}
-kde \begin{equation*}
-dif(a_i,b_j)=
-\begin{cases}
-0 & $if $ a_i = b_j, \cr
-1 & $jinak$
-\end{cases}
-\end{equation*}
-
-\subsubsection{Signature Quadratic Form Distance}
-Tato metrika je velice užitečnou pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít vzdálenosti popsané dříve. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
-Nepočítáme tedy vzdálenosti mezi vlastnostmi, ale právě pomocí Signature Quadratic Form Distance~\cite{Beecks10}, kde používáme funkce podobnosti.
-Matematicky je Signature Quadratic Form Distance (SQFD) definovaná pro dvě množiny vlastností $S^{q} = \{\{c_i^q, w_i^q\}|i=1,...,n\}$ and $S^{o} = \{\{c_i^o, w_i^o\}|i=1,...,m\}$ a~funkce podobnosti $f_s(c_i, c_j)\to \mathbb{R}$ takto:
-$$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
-Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}-f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
-
-Vzhledem k~tomu, že existuje mnoho možností vzdálenostních funkcí po\-krý\-va\-jí\-cí mnoho datových typů, shluková analýza má velmi široký rozsah použitelnosti a~není omezena konkrétními datovými typy. Protože v~této diplomové práci jsme nemohli pokrýt všechny tyto možnosti, zaměřili jsme se pouze na vektorové prostory.
+Vzhledem k~tomu, že existence funkce splňující axiomy metriky je jedno z mála omezení na vlastnosti dat, lze shlukovou analýzu použít na velice různorodá data. Protože v~této diplomové práci jsme nemohli pokrýt všechny tyto možnosti, zaměřili jsme se pouze na vektorové prostory. Pro zajímavost uvádíme v~\hyperref[sec:otherdata]{sekci~\ref*{sec:otherdata}} alespoň příklady nevektorovýc metrických funkcí a odpovídajících dat.
 
 \section{Organizace shluků} \label{sec:clusterorganization}
 Uspořádání objektů do shluků lze provádět několika způsoby, které závisí na struktuře a~počtu shluků, do kterých daný objekt patří.
@@ -176,6 +134,53 @@ Jako algoritmus pro konceptuální shluky můžeme použít algoritmus, který z
 \item[Grafově orientované shluky] Shluky mohou být definovány například jako kli\-ky v~grafech. Klika je podmnožina uzlů, kde je každý uzel spojen hranou s~ostatními vrcholy v~klice~\autoref{fig:graphClusters}.
 Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algoritmy. Musíme tedy použít konkrétní grafové algoritmy, jako je například algoritmus Bron-Kerbosch ~\cite{Sun15} pro nalezení klik.
 \end{description}
+
+\section{Další využití shlukové analýzy} \label{sec:otherdata}
+Pro zajímavost uvádíme příklady využití shukové analýzy nad nevektorovými prostory.
+
+\subsection{Statistická data}
+Pokud cheme shlukovat data nad množinami dat na základě jejich statistických vlastností, můžeme využít funkcí jako je \textbf{Mahalanobisova vzdálenost} a~\textbf{Wassersteinova metrika}
+
+\subsubsection{Mahalanobisova vzdálenost}
+Je užitečná, pokud potřebujeme zjistit pravděpodobnostní vzdálenost skupin objektů nebo vzdálensot objektu od skupiny. Při počítání vzdálenosti bere v úvahu korelaci mezi statistickými parametry a navíc je nezávislá na rozsahu hodnot. Hlavní myšlenkou této vzdálenosti je měření odlišnosti objektu $P$ od průměru skupiny $D$.
+Pokud máme pozorování $p = (p_1,..., p_n)^T$ a~střední hodnotu pozorování $\mu=(\mu_1,...,\mu_n)^T $ a~matici kovariance $S$, Mahalanobisova vzdálenost je definována jako:
+$$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
+
+\subsubsection{Wassersteinova metrika}
+Další vzdálenost použitá ve statistice je Wassersteinova metrika (nazývaná též Earth mover's distance (EMD))~\cite{Vallender73}. Tato metrika se používá pro výpočet vzdá\-le\-nos\-ti mezi dvěma pravděpodobnostními distribucemi na daném metrickém prostoru $M$. Jak název napovídá, název vznikl díky analogii s~posouváním "zeminy" nahromaděné stejným způsobem, jako je tvar distribuce pravděpodobnosti. Vzdálenost je množství "zeminy", které musí být přemístěno tak, aby se změnil tvar hromady na jiný tvar určený rozložením druhé pravděpodobnosti. Množství je pak ještě potřeba vynásobit vzdáleností, o~kterou je třeba zeminu přesunout. Tato vzdálenost je definována takto: \\
+Nechť $X$ je metrický prostor s~metrikou $\rho$ a~$\mathfrak {B}$ je $\sigma$-algebra Borelovských podmnožin $X$. Wassersteinova vzdálenost $R(P, Q)$ mezi rozdělení pravděpodobnosti $P$ a~$Q$ na $(X, \mathfrak{B}) $ je definována jako:
+$$R(P,Q)=\inf\mathbf{E}\rho(\xi, \sigma)$$
+kde $\inf$ se bere  ze všech možných dvojic náhodných proměnných $\xi$ a~$\sigma$ s~distribucí $P$ a~$Q$.\\
+
+\subsection{Nečíselná data}
+Existují také prostory, které nemají s~matematikou mnoho společného, ale obsahují objekty, které jsou porovnatelné.
+
+\subsubsection{Levenshteinova vzdálenost} Levenshteinova vzdálenost se používá k~výpočtu editační vzdálenosti mezi dvěma řetězci $ a, b $ a~je rekurzivně definována podle následující definice:
+\begin{equation*}
+lev_{a,b}(i,j)=
+\begin{cases}
+max(i,j) & $if $ min(i,j)=0, \cr
+min \begin{cases}
+lev_{a,b}(i-1,j) + 1 \cr
+lev_{a,b}(i,j-1) + 1 \cr
+lev_{a,b}(i-1,j-1) + dif(a_i,b_j)
+\end{cases} & $jinak$
+\end{cases}
+\end{equation*}
+kde \begin{equation*}
+dif(a_i,b_j)=
+\begin{cases}
+0 & $if $ a_i = b_j, \cr
+1 & $jinak$
+\end{cases}
+\end{equation*}
+
+\subsubsection{Signature Quadratic Form Distance}
+Tato metrika je velice užitečnou pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít vzdálenosti popsané dříve. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
+Nepočítáme tedy vzdálenosti mezi vlastnostmi, ale právě pomocí Signature Quadratic Form Distance~\cite{Beecks10}, kde používáme funkce podobnosti.
+Matematicky je Signature Quadratic Form Distance (SQFD) definovaná pro dvě množiny vlastností $S^{q} = \{\{c_i^q, w_i^q\}|i=1,...,n\}$ and $S^{o} = \{\{c_i^o, w_i^o\}|i=1,...,m\}$ a~funkce podobnosti $f_s(c_i, c_j)\to \mathbb{R}$ takto:
+$$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
+Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}-f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
 
 \section{K-Means} 
 Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nej\-vše\-stra\-něj\-ších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolilt algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
