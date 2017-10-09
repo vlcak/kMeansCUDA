@@ -4,7 +4,7 @@ Shluková analýza je možná jeden z~nevíce zkoumaných problémů v~oblasti s
 \section{Definice}
 Jelikož je shluková analýza velmi různorodá, zahrnuje mnoho algoritmů, které se mohou značně lišit, protože závisí na datovém modelu a~konkrétní úloze~\cite{Aggarwal13}. Velice se také liší v~definici shluku a~v metodách hledání shluků. Mezi nejčastější definice shluků patří například shluky s~malou vzdá\-le\-nos\-tí mezi objekty jednoho shluku nebo husté oblasti vstupních dat.\\
 
-Velice také záleží na typu vstupních dat, kterých může být také široké množství. V~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
+Velice záleží také na typu vstupních dat, kterých může být široké množství. V~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Množina takových objektů pak musí splňovat axiomi vektorového prostoru. Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
 
 %Množina vektorů $V$ nad polem $F$ musí splňovat axiomy vektorového prostoru s~operacemi $\oplus: V \times V \to V$ zvané sčítání a~$\otimes:F \times V \to V$ zvané násobení:
 %\begin{enumerate}
@@ -28,28 +28,27 @@ $ \forall  u, v, w \in V$
 \item$d(u, v) \leq d(u, w) + d(w, v)$ \textit{(trojúhelníková nerovnost)}
 \end{enumerate}
 
- Jelikož se v~této práci budeme věnovat především vektorovým prostorům, začneme s~obecnou normovanou vzdáleností použitelnou v~tomto prostoru:
+Jelikož se v~této práci budeme věnovat především vektorovým prostorům, začneme s~obecnou normovanou vzdáleností použitelnou v~tomto prostoru:
 $$L_p(a, b)=\|a-b\|_p=\sqrt[\leftroot{-1}\uproot{3}\scriptstyle p]{\sum_i |a_i - b_i|\strut^p} $$
 Nejčastěji používaná vzdálenost $L_p$ je vzdálenost $L_2$ vzdálenost zvaná \textbf {Eukleidovská} nebo $L_1$ zvaná \textbf {Manhattanská vzdá\-le\-nost}.
-Při bližším nahlédnutí zjistíme, výpočty odmocnin v~$L_2$ jsou zbytečné a mohli bychom jejich výpočet vynechat. Takto vzniklá funkce je také metrikou (neporušuje metrické axiomy), značí se $L_2^2$  a~v případě $L_2$ se obvykle nazývá \textbf {čtvercová eukleidovská vzdálenost}.\\
+Při bližším nahlédnutí zjistíme, že výpočty odmocnin v~$L_2$ jsou zbytečné a mohli bychom jejich výpočet vynechat. Takto vzniklá funkce je také metrikou (neporušuje metrické axiomy), značí se $L_2^2$  a~v případě $L_2$ se obvykle nazývá \textbf {čtvercová eukleidovská vzdálenost}.\\
 
-Vzhledem k~tomu, že existence funkce splňující axiomy metriky je jedno z mála omezení na vlastnosti dat, lze shlukovou analýzu použít na velice různorodá data. Protože v~této diplomové práci jsme nemohli pokrýt všechny tyto možnosti, zaměřili jsme se pouze na vektorové prostory. Pro zajímavost uvádíme v~\hyperref[sec:otherdata]{sekci~\ref*{sec:otherdata}} alespoň příklady nevektorovýc metrických funkcí a odpovídajících dat.
+Vzhledem k~tomu, že existence funkce splňující axiomy metriky je jedno z mála omezení na vlastnosti dat, lze shlukovou analýzu použít na velice různorodá data. Protože v~této diplomové práci jsme nemohli pokrýt všechny tyto možnosti, zaměřili jsme se pouze na vektorové prostory. Pro zajímavost uvádíme v~\hyperref[sec:otherdata]{sekci~\ref*{sec:otherdata}} alespoň příklady nevektorových metrických funkcí a odpovídajících dat.
 
 \section{Organizace shluků} \label{sec:clusterorganization}
 Uspořádání objektů do shluků lze provádět několika způsoby, které závisí na struktuře a~počtu shluků, do kterých daný objekt patří.
 \begin{description}
 \item[Pevné shlukování] je shlukování, kde každý objekt patří k~jednomu jedinému shluku. To znamená, že pevná shlukování vytváří systém, kde jsou shluky disjunktní množiny.
 \item[Neostré (fuzzy) shlukování] také přiřazuje objekty do shluků, ale rozdíl je, že objekt může patřit více než jednomu shluku. Členství objektu ve shluku je určeno podle úrovně nebo procenta členství, takže objekt může patřit k~shluku více či méně na základě podobnosti.
-\item[Hierarchické shlukování] je tvořené hierarchicky uspořádanými shluky, které vytváří systém podmnožin. Sjednocení dvou shluků je buď prázdná množina, nebo jeden z~nich. Shluky tedy vytvářejí struktury podobné n-árním stromům. Z~důvodu složitosti hierarchického shlukování se v~této práci zabýváme pouze nehierarchickým typem shlukování.
+\item[Hierarchické shlukování] je tvořené hierarchicky uspořádanými shluky, které vytváří systém podmnožin. Dva shluky tedy buď neobsahují žádné společné objekty a nebo je jeden naopak obsahuje všechny objekty z druhého. Tím tedy shluky vytvářejí struktury podobné n-árním stromům. Z~důvodu složitosti hierarchického shlukování se v~této práci zabýváme pouze nehierarchickým typem shlukování.
 \end{description}
-Pro všechny tři typy existuje verze shlukování, která vynechává izolované objekty vzdálené od ostatních. Tyto objekty se nazývají odlehlé hodnoty a~jsou ponechány nepřiřazené. Protože výpočet bez striktně přiřazených objektů je složitý a~nepřináší mnoho výhod, v~této práci jsme se zaměřili pouze na shlukování bez odlehlých hodnot.\\
+Pro všechny tři typy existuje verze shlukování, která vynechává izolované objekty vzdálené od ostatních. Tyto objekty se nazývají odlehlé hodnoty a~jsou ponechány nepřiřazené. I když výpočet bez striktně přiřazených objektů přináší výhody, zaměřili jsme se v~této práci pouze na shlukování bez odlehlých hodnot, protože je takový výpočet mnohem jednodušší.\\
 
-Existuje mnoho modelů shluků, ale v~další části~\ref{sec:clustermodels} budou popsány pouze ty nejznámější. Jedním z~důvodů, proč jich existuje velké množství, je nemožnost přesné definice "shluku"~\cite{EstivillCastro02}. Druhým důvodem je široká použitelnost této úlohy, takže lidé z~různých oborů se k~tomuto problému a~především definici shluku staví podle toho, jak je v~daném oboru pojem shluku chápán.\\
 %There are many cluster models but in next section~\ref{sec:clustermodels}, only the best known will be described. One of the reasons why there exists a~large amount of them is that the ``cluster'' cannot be precisely defined~\cite{EstivillCastro02}. Second reason is really wide applicability of this task so people from different departments approach this problem differently, because their notion of cluster differs significantly. \\
 
 \section{Shlukové modely a~algoritmy} \label{sec:clustermodels}
-Mnoho shlukových algoritmů existuje díky existenci mnoha shlukových modelů. Problémem ovšem je, že neexistuje univerzální algoritmus, který pokrývá všechny shlukové modely. Všechny algoritmy byly totiž navržen tak, aby pokrývaly konkrétní model, popřípadě nějakou podmnožinu modelů, a~obvykle jsou slabé nebo nevhodné pro jiné modely.
-%There exist many clustering algorithms because of many cluster models. Problem is that there exist no universal algorithm, such an algorithm that covers all cluster models. Each algorithm was designed to cover one model or a~subset of models and usually it is weak or not applicable for other models.
+Existuje mnoho modelů shluků, ale v~této části budou popsány pouze ty nejznámější. Jedním z~důvodů, proč jich existuje velké množství, je nemožnost přesné definice "shluku"~\cite{EstivillCastro02}. Druhým důvodem je široká použitelnost této úlohy, takže lidé z~různých oborů se k~tomuto problému a~především definici shluku staví podle toho, jak je v~daném oboru pojem shluku chápán.\\
+Ke většině modelů shluků pak existuje vlastní algoritmus. Problémem ovšem je, že neexistuje univerzální algoritmus, který pokrývá všechny shlukové modely. Všechny algoritmy byly totiž navržen tak, aby pokrývaly konkrétní model, popřípadě nějakou podmnožinu modelů, a~obvykle nejsou vhodné nebo pomalé pro jiné modely.
 
 \subsection{Shlukové modely}
 Protože neexistuje jednotná definice shluku, neexistuje ani jednotná definice shlu\-ko\-vý\-ch modelů. V~následující části budou popsány nejznámější modely.
