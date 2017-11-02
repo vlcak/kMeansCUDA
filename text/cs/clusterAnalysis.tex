@@ -120,17 +120,17 @@ Propojování objektů do shluků může být problematické. Shluk totiž můž
 
 %Tyto metody nejsou odolné proti extrémním objektům, které způsobují vytváření nových shluků nebo dokonce sloučení jiných. Metody mají obecně složitost $O(n^3) $, takže pro velké množství dat jsou pomalé. Pro speciální případy existují optimalizace, které mají jen složitost $O(n^2) $. Tyto metody jsou však považovány za zastaralé.
 
-\item[Shluky založené na hustotě] Shluky jsou husté oblasti objektů oddělené oblastmi s~nízkou hustotou. Tato metoda je vhodná pro případy, kdy vstupní data obsahují šum, protože ten je pak odfiltrován oblastmi s~nízkou hustotou aniž by to změnilo rozdělení do shluků~(\autoref{fig:densityClusters}).
+\item[Shluky založené na hustotě] Shluky jsou husté oblasti objektů oddělené oblastmi s~nízkou hustotou. Tato metoda je vhodná pro případy, kdy vstupní data obsahují šum, protože ten je pak odfiltrován oblastmi s~nízkou hustotou aniž by to změnilo rozdělení do shluků~(\autoref{fig:densityClusters}). Hustotu zde můžeme definovat jako počet objektů v jednotce prostoru.
 Jedna z~nejpopulárnějších metod pro shlukování na základě hustoty je \textit{DBSCAN}. Jde o~podobnou metodu, jako je souvislé shlukování, protože spojuje body na základě vzdálenosti. Liší se ale v~tom, že spojuje pouze body splňující kritérium hustoty. To znamená, že v~okolí určeném vzdáleností musí být alespoň minimální počet objektů. Tyto objekty se pak nazývají jádro a~vytváří základ shluku. Objekty, které nesplňují kritérium hustoty, ale jsou dostatečně blízko k~alespoň jednomu bodu ze shluku, se přidávají do shluku.
 Výhodou této metody je její výpočetní nenáročnost, protože vyžaduje pouze lineární počet dotazů na rozsah. Tato metoda je navíc deterministická, takže ji není potřeba spouštět v~iteracích.
 Nevýhodou této metody je parametr hustoty $\epsilon$, protože při špatném nastavení mohou být hranice shluků s~menší hustotou interpretovány jako šum. Problémy způsobují také shluky, které leží blízko sebe, protože mohou být chápány jako jeden.
 
-\item[Distribuční modely shluků] Shluky v~distribučních modelech jsou objekty, kte\-ré patří ke stejné distribuci pravděpodobnosti. Model umožňuje, aby jeden objekt patřil do více shluků.
-Tento přístup v~podstatě napodobuje proces generování vstupních dat a~sna\-ží se rekonstruovat ztracené statistické parametry. Hlavní problém tohoto modelu shluků je problém známý jako \textit{overfitting}, což znamená, že komplexnější model je popsán méně složitým a~rozdíl mezi nimi je označen jako odchylka nebo šum. Například 3 body z~okolí vrcholu paraboly budou popsány lineární funkcí.
+\item[Distribuční modely shluků] Shluky v~distribučních modelech jsou objekty, kte\-ré patří ke stejné distribuci pravděpodobnosti. Model umožňuje, aby jeden objekt patřil do více shluků a tedy i do více distribucí.
+Tento přístup v~podstatě napodobuje proces generování vstupních dat a~sna\-ží se rekonstruovat ztracené statistické parametry. %Hlavní problém tohoto modelu shluků je problém známý jako \textit{overfitting}, což znamená, že komplexnější model je popsán méně složitým a~rozdíl mezi nimi je označen jako odchylka nebo šum. Například 3 body z~okolí vrcholu paraboly budou popsány lineární funkcí.
 Jednou z~metod používaných v~distribučním shlukování je \textit {Gaussian mixture models}, kde algoritmus iterativně optimalizuje parametry pevného počtu Gaussových distribucí.
 Tato metoda předpokládá vstupní množinu s~daty odpovídajícími Gaussově distribuci, ale problémem je, že data nemusí od\-po\-ví\-dat vůbec žádné distribuci a~tedy nemusí mít ani žádný model.
 
-\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~\autoref{fig:conceptualClusters}.
+\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~(\autoref{fig:conceptualClusters}).
 Jako algoritmus pro konceptuální shluky můžeme použít algoritmus, který závisí na jiných vlastnostech modelu a~méně významné vlastnosti objektů jednoduše ignoruje.
 
 \item[Grafově orientované shluky] Shluky mohou být definovány například jako kli\-ky v~grafech. Klika je podmnožina uzlů, kde je každý uzel spojen hranou s~ostatními vrcholy v~klice~\autoref{fig:graphClusters}.
