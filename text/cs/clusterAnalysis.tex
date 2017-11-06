@@ -130,11 +130,11 @@ Tento přístup v~podstatě napodobuje proces generování vstupních dat a~sna\
 Jednou z~metod používaných v~distribučním shlukování je \textit {Gaussian mixture models}, kde algoritmus iterativně optimalizuje parametry pevného počtu Gaussových distribucí.
 Tato metoda předpokládá vstupní množinu s~daty odpovídajícími Gaussově distribuci, ale problémem je, že data nemusí od\-po\-ví\-dat vůbec žádné distribuci a~tedy nemusí mít ani žádný model.
 
-\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~(\autoref{fig:conceptualClusters}).
-Jako algoritmus pro konceptuální shluky můžeme použít algoritmus, který závisí na jiných vlastnostech modelu a~méně významné vlastnosti objektů jednoduše ignoruje.
+\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~(\autoref{fig:conceptualClusters}). Je to dáno tím, že při konceptuálním shlukování známe význam a jednotlivých vlastností. Tím pádem můžeme důležité vlatsnosti upřednostnit a jiné naopak upozadit.
+Jako algoritmus pro konceptuální shluky můžeme použít algoritmus, který závisí na jen na podstatných vlastnostech modelu a~méně významné vlastnosti objektů jednoduše ignoruje.
 
-\item[Grafově orientované shluky] Shluky mohou být definovány například jako kli\-ky v~grafech. Klika je podmnožina uzlů, kde je každý uzel spojen hranou s~ostatními vrcholy v~klice~\autoref{fig:graphClusters}.
-Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algoritmy. Musíme tedy použít konkrétní grafové algoritmy, jako je například algoritmus Bron-Kerbosch ~\cite{Sun15} pro nalezení klik.
+\item[Grafově orientované shluky] Shluky mohou být definovány například jako kli\-ky v~grafech. Klika je podmnožina uzlů, kde je každý uzel spojen hranou s~ostatními vrcholy v~klice~(\autoref{fig:graphClusters}).
+Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algoritmy, jako je například algoritmus Bron-Kerbosch ~\cite{Sun15} pro nalezení klik.
 \end{description}
 
 \section{Další využití shlukové analýzy} \label{sec:otherdata}
@@ -149,19 +149,19 @@ Pokud máme pozorování $p = (p_1,..., p_n)^T$ a~střední hodnotu pozorování
 $$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
 
 \subsubsection{Wassersteinova metrika}
-Další vzdálenost použitá ve statistice je Wassersteinova metrika (nazývaná též Earth mover's distance (EMD))~\cite{Vallender73}. Tato metrika se používá pro výpočet vzdá\-le\-nos\-ti mezi dvěma pravděpodobnostními distribucemi na daném metrickém prostoru $M$. Jak název napovídá, název vznikl díky analogii s~posouváním "zeminy" nahromaděné stejným způsobem, jako je tvar distribuce pravděpodobnosti. Vzdálenost je množství "zeminy", které musí být přemístěno tak, aby se změnil tvar hromady na jiný tvar určený rozložením druhé pravděpodobnosti. Množství je pak ještě potřeba vynásobit vzdáleností, o~kterou je třeba zeminu přesunout. Tato vzdálenost je definována takto: \\
-Nechť $X$ je metrický prostor s~metrikou $\rho$ a~$\mathfrak {B}$ je $\sigma$-algebra Borelovských podmnožin $X$. Wassersteinova vzdálenost $R(P, Q)$ mezi rozdělení pravděpodobnosti $P$ a~$Q$ na $(X, \mathfrak{B}) $ je definována jako:
-$$R(P,Q)=\inf\mathbf{E}\rho(\xi, \sigma)$$
-kde $\inf$ se bere  ze všech možných dvojic náhodných proměnných $\xi$ a~$\sigma$ s~distribucí $P$ a~$Q$.\\
+Další vzdálenost použitá ve statistice je Wassersteinova metrika (nazývaná též Earth mover's distance (EMD))~\cite{Vallender73}. Tato metrika se používá pro výpočet vzdá\-le\-nos\-ti mezi dvěma pravděpodobnostními distribucemi na daném metrickém prostoru $M$. Jak název napovídá, název vznikl díky analogii s~posouváním "zeminy" nahromaděné stejným způsobem, jako je tvar distribuce pravděpodobnosti. Vzdálenost je množství zeminy, které musí být přemístěno tak, aby se změnil tvar hromady na jiný tvar určený rozložením druhé pravděpodobnosti. Množství je pak ještě potřeba vynásobit vzdáleností, o~kterou je třeba zeminu přesunout.%Tato vzdálenost je definována takto: \\
+%Nechť $X$ je metrický prostor s~metrikou $\rho$ a~$\mathfrak {B}$ je $\sigma$-algebra Borelovských podmnožin $X$. Wassersteinova vzdálenost $R(P, Q)$ mezi rozdělení pravděpodobnosti $P$ a~$Q$ na $(X, \mathfrak{B}) $ je definována jako:
+%$$R(P,Q)=\inf\mathbf{E}\rho(\xi, \sigma)$$
+%kde $\inf$ se bere  ze všech možných dvojic náhodných proměnných $\xi$ a~$\sigma$ s~distribucí $P$ a~$Q$.\\
 
 \subsection{Nečíselná data}
 Existují také prostory, které nemají s~matematikou mnoho společného, ale obsahují objekty, které jsou porovnatelné.
 
-\subsubsection{Levenshteinova vzdálenost} Levenshteinova vzdálenost se používá k~výpočtu editační vzdálenosti mezi dvěma řetězci $ a, b $ a~je rekurzivně definována podle následující definice:
+\subsubsection{Levenshteinova vzdálenost} Levenshteinova vzdálenost se používá k~výpočtu editační vzdálenosti mezi dvěma řetězci $ a, b $ a~je rekurzivně definována takto:
 \begin{equation*}
 lev_{a,b}(i,j)=
 \begin{cases}
-max(i,j) & $if $ min(i,j)=0, \cr
+max(i,j) & $pokud $ min(i,j)=0, \cr
 min \begin{cases}
 lev_{a,b}(i-1,j) + 1 \cr
 lev_{a,b}(i,j-1) + 1 \cr
@@ -172,17 +172,19 @@ lev_{a,b}(i-1,j-1) + dif(a_i,b_j)
 kde \begin{equation*}
 dif(a_i,b_j)=
 \begin{cases}
-0 & $if $ a_i = b_j, \cr
+0 & $pokud $ a_i = b_j, \cr
 1 & $jinak$
 \end{cases}
 \end{equation*}
 
+$a_i, b_j$ značí i-tý znak řetězce $a$ respektive j-tý znak řetězce $b$.
+
 \subsubsection{Signature Quadratic Form Distance}
-Tato metrika je velice užitečnou pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít vzdálenosti popsané dříve. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
+Tato metrika se používá pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít běžnévzdálenosti. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
 Nepočítáme tedy vzdálenosti mezi vlastnostmi, ale právě pomocí Signature Quadratic Form Distance~\cite{Beecks10}, kde používáme funkce podobnosti.
 Matematicky je Signature Quadratic Form Distance (SQFD) definovaná pro dvě množiny vlastností $S^{q} = \{\{c_i^q, w_i^q\}|i=1,...,n\}$ and $S^{o} = \{\{c_i^o, w_i^o\}|i=1,...,m\}$ a~funkce podobnosti $f_s(c_i, c_j)\to \mathbb{R}$ takto:
 $$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
-Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}-f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
+Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}=f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
 
 \section{K-Means} 
 Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nej\-vše\-stra\-něj\-ších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolilt algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
