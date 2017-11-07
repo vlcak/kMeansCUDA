@@ -4,7 +4,7 @@ Shluková analýza je možná jeden z~nevíce zkoumaných problémů v~oblasti s
 \section{Definice}
 Jelikož je shluková analýza velmi různorodá, zahrnuje mnoho algoritmů, které se mohou značně lišit, protože závisí na datovém modelu a~konkrétní úloze~\cite{Aggarwal13}. Velice se také liší v~definici shluku a~v metodách hledání shluků. Mezi nejčastější definice shluků patří například shluky s~malou vzdá\-le\-nos\-tí mezi objekty jednoho shluku nebo husté oblasti vstupních dat.\\
 
-Velice záleží také na typu vstupních dat, kterých může být široké množství. V~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Množina takových objektů pak musí splňovat axiomi vektorového prostoru. Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
+Velice záleží také na typu vstupních dat, kterých může být široké množství. V~této práci se zaměříme především na vektorové prostory, abychom mohli definovat shlukovou analýzu následujícím způsobem: Jako objekt zvolíme reálný vektor s~dimenzí $d$, kde každý prvek vektoru představuje vlastnost objektu. Množina takových objektů pak musí splňovat axiomy vektorového prostoru. Hlavní úkol je stejný jako ve obecné definici. Musíme najít systém podmnožin tak, aby vzdálenosti mezi vektory v~jedné podmnožině byly minimální.
 
 %Množina vektorů $V$ nad polem $F$ musí splňovat axiomy vektorového prostoru s~operacemi $\oplus: V \times V \to V$ zvané sčítání a~$\otimes:F \times V \to V$ zvané násobení:
 %\begin{enumerate}
@@ -100,7 +100,7 @@ Protože neexistuje jednotná definice shluku, neexistuje ani jednotná definice
 \begin{description}
 \item[Dobře oddělené shluky] Shluky jsou snadno oddělitelné - části shluků se ne\-pře\-krý\-va\-jí a~rozděluje je řídká nebo prázdná oblast. Shluk je množina objektů, kde je každý objekt uvnitř shluku bližší objektům z~jeho shluku než objektům z~jiných shluků~(\autoref{fig:wellSeparatedObjects}). Jedná se o~nejjednodušší vstup dat a~většina algoritmů v~tomto případě funguje dobře.
 
-\item[Shluky založené na centroidech] Objekt patří do toho shluku, jehož centroidu (střed) je nejblíže~(\autoref{fig:centerBasedClusters}). Nevyžadujeme tedy oddělenost shluků jako u předchozího modelu. Centroid je speciální objekt vybraných nebo zkonstruovaný předtím, než se přiřazují objekty. Výsledek je podobný rozdělení prostoru do Voroného buněk, kde jsou shluky podobné Voroného buňkám z~Voroného diagramu. Centroidy jsou v tomto rozdělení nazývány generátory. Model založený na centroidech je vhodný pro algoritmy založené na vzdálenosti mezi objektem a~centroidem.\\
+\item[Shluky založené na centroidech] Objekt patří do toho shluku, jehož centroidu (střed) je nejblíže~(\autoref{fig:centerBasedClusters}). Nevyžadujeme tedy oddělenost shluků jako u předchozího modelu. Centroid je speciální objekt vybraných nebo zkonstruovaný předtím, než se přiřazují objekty. Výsledek je podobný rozdělení prostoru do Voroného buněk, kde jsou shluky podobné právě Voroného buňkám z~Voroného diagramu. Centroidy jsou v tomto rozdělení nazývány generátory. Model založený na centroidech je vhodný pro algoritmy založené na vzdálenosti mezi objektem a~centroidem.\\
 
 Jedním z~algoritmů pro řešení tohoto problému je \textbf{Centroidové shlukování}. Toto shlukování je optimalizačním problémem, kde hledáme centroidy tak, aby byla vzdálenost mezi body a~centroidy nejnižší. Problémem je, že samotná optimalizace je NP-těžký problém a~tak se často pro zjednodušení výpočtu optimální řešení pouze aproximuje. Aproximace se běžně provádí v~mnoha iteracích, které sestávají fáze přiřazení shluků k~objektům a~z fáze počítání nových centroidů.
 
@@ -108,7 +108,7 @@ Jedním z~algoritmů pro řešení tohoto problému je \textbf{Centroidové shlu
 
 Hlavní myšlenka souvislých shluků je, že objekty, které jsou v~okolí, jsou více příbuzné než objekty, které jsou dále. Každý shluk tedy může být popsán například vzdáleností potřebnou pro připojení ke shluku. Mají-li shluky tuto vlastnost, můžeme je hierarchicky uspořádat tak, že nadřazené shluky jsou jen málo vzdálené od objektů v~nich obsažených. Tato hierarchie může být reprezentována jako dendrogram, což je stromový diagram zobrazující hierarchii shluků. Tato vlastnost může být použita jak pro hierarchické shlukování, tak pro pevné shlukování, pokud vynecháme hierarchické vlastnosti. \\
 
-Propojování objektů do shluků může být problematické. Shluk totiž může obsahovat velké množství objektů a~je tedy mnoho možností, k~jakému objektu vzdálenost počítat. Mezi nejpoužívanější patří  vzdálenost mezi nejodlehlejšími nebo nejbližšími objekty dvou shluků, popřípadě vzdálenost průmerů nebo centroidů. %Existuje několik metod pro výběr kritérií propojení mezi dvěma množinami objektů $A$ a~$B$, $d$ je zvolená metrika:
+Propojování objektů do shluků může být problematické. Shluk totiž může obsahovat velké množství objektů a~je tedy mnoho možností, k~jakému objektu vzdálenost počítat. Mezi nejpoužívanější patří  vzdálenost mezi nejodlehlejšími nebo nejbližšími objekty dvou shluků, popřípadě vzdálenost průměrů nebo centroidů. %Existuje několik metod pro výběr kritérií propojení mezi dvěma množinami objektů $A$ a~$B$, $d$ je zvolená metrika:
 %\begin{description}
 %\item[Maximální nebo úplná vazba shluků] $$\max\{d(a,b) : a~\in A, b \in B\}$$
 %\item[Minimální nebo jedinečná vazba shluků] $$\min\{d(a,b) : a~\in A, b \in B\}$$
@@ -130,7 +130,7 @@ Tento přístup v~podstatě napodobuje proces generování vstupních dat a~sna\
 Jednou z~metod používaných v~distribučním shlukování je \textit {Gaussian mixture models}, kde algoritmus iterativně optimalizuje parametry pevného počtu Gaussových distribucí.
 Tato metoda předpokládá vstupní množinu s~daty odpovídajícími Gaussově distribuci, ale problémem je, že data nemusí od\-po\-ví\-dat vůbec žádné distribuci a~tedy nemusí mít ani žádný model.
 
-\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~(\autoref{fig:conceptualClusters}). Je to dáno tím, že při konceptuálním shlukování známe význam a jednotlivých vlastností. Tím pádem můžeme důležité vlatsnosti upřednostnit a jiné naopak upozadit.
+\item[Konceptuální shluky] Objekty uvnitř shluku mají některé vlastnosti stejné nebo podobné, ale jiné vlastnosti se mohou významně lišit~(\autoref{fig:conceptualClusters}). Je to dáno tím, že při konceptuálním shlukování známe význam a jednotlivých vlastností. Tím pádem můžeme důležité vlastnosti upřednostnit a jiné naopak upozadit.
 Jako algoritmus pro konceptuální shluky můžeme použít algoritmus, který závisí na jen na podstatných vlastnostech modelu a~méně významné vlastnosti objektů jednoduše ignoruje.
 
 \item[Grafově orientované shluky] Shluky mohou být definovány například jako kli\-ky v~grafech. Klika je podmnožina uzlů, kde je každý uzel spojen hranou s~ostatními vrcholy v~klice~(\autoref{fig:graphClusters}).
@@ -138,13 +138,13 @@ Kvůli speciálním požadavkům tohoto modelu jsou zapotřebí speciální algo
 \end{description}
 
 \section{Další využití shlukové analýzy} \label{sec:otherdata}
-Pro zajímavost uvádíme příklady využití shukové analýzy nad nevektorovými prostory.
+Pro zajímavost uvádíme příklady využití shlukové analýzy nad nevektorovými prostory.
 
 \subsection{Statistická data}
 Pokud cheme shlukovat data nad množinami dat na základě jejich statistických vlastností, můžeme využít funkcí jako je \textbf{Mahalanobisova vzdálenost} a~\textbf{Wassersteinova metrika}
 
 \subsubsection{Mahalanobisova vzdálenost}
-Je užitečná, pokud potřebujeme zjistit pravděpodobnostní vzdálenost skupin objektů nebo vzdálensot objektu od skupiny. Při počítání vzdálenosti bere v úvahu korelaci mezi statistickými parametry a navíc je nezávislá na rozsahu hodnot. Hlavní myšlenkou této vzdálenosti je měření odlišnosti objektu $P$ od průměru skupiny $D$.
+Je užitečná, pokud potřebujeme zjistit pravděpodobnostní vzdálenost skupin objektů nebo vzdálenost objektu od skupiny. Při počítání vzdálenosti bere v úvahu korelaci mezi statistickými parametry a navíc je nezávislá na rozsahu hodnot. Hlavní myšlenkou této vzdálenosti je měření odlišnosti objektu $P$ od průměru skupiny $D$.
 Pokud máme pozorování $p = (p_1,..., p_n)^T$ a~střední hodnotu pozorování $\mu=(\mu_1,...,\mu_n)^T $ a~matici kovariance $S$, Mahalanobisova vzdálenost je definována jako:
 $$D_M(x) = \sqrt{(x - \mu)^T S^{-1} (x-\mu)}$$
 
@@ -180,14 +180,14 @@ dif(a_i,b_j)=
 $a_i, b_j$ značí i-tý znak řetězce $a$ respektive j-tý znak řetězce $b$.
 
 \subsubsection{Signature Quadratic Form Distance}
-Tato metrika se používá pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít běžnévzdálenosti. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
+Tato metrika se používá pro porovnávání multimediálních objektů, které mohou být popsány různými charakteristikami. Problém je v~tom, že se tyto charakteristiky mohou lišit ve struktuře a~velikosti, takže nemůžeme použít běžné vzdálenosti. Vlastnost každého objektu je popsána vektorem dvojic centroidů z~prostoru vlastností $\mathbb{FS}$ a~jeho váhy z~$\mathbb{R^{+}}$.
 Nepočítáme tedy vzdálenosti mezi vlastnostmi, ale právě pomocí Signature Quadratic Form Distance~\cite{Beecks10}, kde používáme funkce podobnosti.
 Matematicky je Signature Quadratic Form Distance (SQFD) definovaná pro dvě množiny vlastností $S^{q} = \{\{c_i^q, w_i^q\}|i=1,...,n\}$ and $S^{o} = \{\{c_i^o, w_i^o\}|i=1,...,m\}$ a~funkce podobnosti $f_s(c_i, c_j)\to \mathbb{R}$ takto:
 $$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
 Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}=f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
 
 \section{K-Means} 
-Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nej\-vše\-stra\-něj\-ších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolilt algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
+Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nejpoužívanějších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolit algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
 
 \subsection{Definice}
 K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus využívající shlukový model založený na centroidech. Vstupem je množina $n$ bodů v~$d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a~volitelném počtu iterací $i$.
@@ -221,7 +221,7 @@ Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu,
 Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteční body~\cite{Tan05}:
 \begin{description}
 \item[více běhů] k-means je spuštěn několikrát s~různými počátečními body a~jako výstup je vybrán nejlepší výsledek.
-\item[vzorkování] Počáteční cenroidy jsou vybrány na základě ovzorkování vstupních dat hierarchickým shlukování.
+\item[vzorkování] Počáteční centroidy jsou vybrány na základě vzorkování vstupních dat hierarchickým shlukování.
 \item[více centroidů] Je vybráno více centroidů než je vstupní $k$ a~z nich se vyberou ty nejlépe rozmístěné.
 \item[následné zpracování] Výsledek algoritmu je následné zpracován - Shluky s~nej\-vyš\-ším $SSE$ jsou rozděleny a~na druhou stranu shluky s~nejnižším $SSE$ mohou být spojeny.
 \end{description} 
