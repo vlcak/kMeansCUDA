@@ -186,13 +186,13 @@ Matematicky je Signature Quadratic Form Distance (SQFD) definovaná pro dvě mno
 $$SQFD_{f_s}(S^q,S^o)=\sqrt{(w_q|-w_o)A_{f_n}(w_q|-w_o)^T}$$
 Kde $A_{f_n} \in \mathbb{R}^{(n+m)\times(n+m)}$ je matice podobnosti vygenerovaná aplikací funkce podobnosti $f_s$ na odpovídající centroidy  ($a_{ij}=f_s(c_i,c_j)$) a~operátor $|$ znamená zřetězení dvou vektorů, takže $w_q|-w_o = (w_1^q,...,w_n^q,-w_1^o,...,-w_m^o)$\\
 
-\section{K-Means} 
-Protože shluková analýza lze díky vícero modelům shluků řešit více způsoby, nemohli jsme se zaměřit na všechny modely, jejichž algoritmy bychom následně urychlovali. Je to dáno tím, že neexistuje žádný univerzální přístup, jak algoritmy paralelizovat. Pokud chceme urychlit algoritmus co nejefektivněji, musíme naopak využít každý jeho detail. Potřebujeme tedy zvolit jeden z~nejpoužívanějších algoritmů, na který se následně zaměříme. Jako vhodného reprezentanta jsme se rozhodli zvolit algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
+\section{K-Means}
+Pokud chceme urychlit jakýkoliv algoritmus co nejefektivněji, musíme využít každý jeho detail. To ovšem není možné udělat obecně pro všechny algoritmy shlukové analýzy a je tedy potřeba zaměřit se na konkrétní algoritmus. Na druhou stranu je také potřeba zvolit dostatečně obecný algoritmus, aby byl výsledek co nejpoužitelnější. Jako vhodného reprezentanta jsme se rozhodli zvolit algoritmus k-means kvůli jeho široké škále využití a~nezávislosti na vlastnostech vstupních dat. \\
 
 \subsection{Definice}
-K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus využívající shlukový model založený na centroidech. Vstupem je množina $n$ bodů v~$d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a~volitelném počtu iterací $i$.
-Úkolem je přidělit body centroidům (středům shluků) a~minimalizovat vzdálenost mezi centroidem shluku a~body obsaženými v~tomuto shluku. Algoritmus funguje iterativně a~každá i\-te\-ra\-ce se skládá ze dvou kroků. V~prvním kroku je pro každý bod nalezen nejbližší centroid a~tento bod je přidělen do shluku, který k~centroidu náleží. Ve druhém kroku jsou nové centroidy vypočítány jako průměr všech bodů přidělených stej\-né\-mu shluku. Algoritmus končí po předem daném počtu kroků nebo když se mezi dvěma iteracemi nic nezmění.
-Výstupem tohoto algoritmu jsou souřadnice centroidů a~body s~přiřazenými shluky.
+K-means algoritmus~\cite{Aggarwal13, Tan05} je algoritmus využívající shlukový model založený na centroidech. Vstupem je množina $n$ bodů v~$d$-dimenzionálním prostoru $R^d$, počet výstupních shluků $k$ a~počtu iterací $i$.
+Úkolem je jednotlivé body přiřadit k centroidům (středům shluků) a vytvořit tak shluky. Toto rozdělení se navíc snažíme optimalizovat tak, aby byla suma vzdáleností mezi jednotlivými body a přiřazenými centroidy co nejmenší. Algoritmus funguje iterativně a~každá i\-te\-ra\-ce se skládá ze dvou kroků. V~prvním kroku je pro každý bod nalezen nejbližší centroid. Tento bod je přidělen do shluku, který k~centroidu náleží. Ve druhém kroku jsou nové centroidy vypočítány jako průměr (mean) všech bodů přidělených stej\-né\-mu shluku. Algoritmus končí po předem daném počtu kroků nebo pokud se mezi dvěma iteracemi nezmění rozdělení bodů do shluků.
+Výstupem tohoto algoritmu jsou souřadnice centroidů a~případně i~body rozdělené do shluků.
 
 \algdef{SE}[REPEAT]{Repat}{Until}{\algorithmicrepeat}[1]{\algorithmicuntil\ #1}
 
@@ -207,20 +207,20 @@ Výstupem tohoto algoritmu jsou souřadnice centroidů a~body s~přiřazenými s
 \end{algorithmic}
 \end{algorithm}
 
-Protože v~prvním kroku neznáme centroidy, často se jako počáteční hodnoty používá prvních $k$ bodů vstupní množiny. Algoritmus K-means konverguje rychle během několika prvních iterací, takže podmínku zastavení můžeme pozměnit na "Změnilo se jen relativně málo centroidů". \cite{Tan05}.
-Složitost výpočtu je $O(n*k*i*d)$, kde $n$ je počet vstupních bodů, $k$ je počet clusterů, $i$ je počet iterací a~$d$ je dimenze vstupních dat. \\
+Protože v~prvním kroku neznáme centroidy, často se jako počáteční hodnoty používá prvních $k$ bodů vstupní množiny. Algoritmus K-means konverguje rychle během několika prvních iterací, takže můžeme definici pozměnit tak, že se algoritmus zastaví, pokud mezi dvěma iteracemi dojde ke změně pouze $\epsilon$ centroidů. kde $\epsilon$ je předem dané. \cite{Tan05}.
+Složitost výpočtu je $O(n\times k\times i\times d)$, kde $n$ je počet vstupních bodů, $k$ je počet clusterů, $i$ je počet iterací a~$d$ je dimenze vstupních dat. \\
 
 \subsection{Měření kvality}
 Abychom mohli vyhodnotit výstup k-means, musíme umět měřit kvalitu přiřazení do shluků. Pro tento účel se nejčastěji používá funkce \textbf{Sum of Squared Error (SSE)}. Chyba jednoho bodu je reprezentována vzdáleností od centroidu daného shluku a~funkce SSE pak sčítá čtverce chyb jednotlivých bodů.
 $$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }$$
-Pokud dostáváme výsledky se špatným $SSE$, můžeme jej snížit například zvýšením počtu shluků $k$, ale pokud jsou počáteční shluky vybrány špatně, nemusí to pomoci.\\
+Pokud dostáváme výsledky s vysokým $SSE$, můžeme jej snížit například zvýšením počtu shluků $k$. Pokud jsou ale počáteční shluky vybrány špatně, nemusí ani zvýšení počtu shluků pomoci a je potřeba vybrat jiné počáteční centroidy (změnit algoritmus výběru).\\
 
 \subsection{Omezení k-means}
-Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu, protože jej potřebujeme znát již na začátku a~po počátečním výpočtu toto číslo už nelze změnit. Tuto možnost mohou ale některé typy problémů vyžadovat a~tak jsou pro ně k-means nepoužitelné. Dalším problémem je výběr počátečních centroidů. I~když zvolíme ideální $k$ pro vstupní data, pravděpodobnost, že jsme zvolili objekty z~různých shluků jako počáteční centroidy, je opravdu malá~\cite{Tan05}: $$P = \frac{\mbox{počet možností výběru jednoho bodu z~každého shluku}}{\mbox{počet možností volby K~centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ Tato pravděpodobnost se blíží nule i~pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
+Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu, protože jej potřebujeme znát již na začátku a~v~základní variantě k-means už toto číslo nelze změnit během výpočtu. Tuto možnost mohou ale některé typy problémů vyžadovat a~tak jsou pro ně k-means nepoužitelné.  I~když zvolíme ideální $k$ pro vstupní data, dostaneme se k dalšímu problému, kterým je výběr počátečních centroidů. V ideálním případě jsou totiž počáteční centroidy každý z~jiného shluku, ale pravděpodobnost, že jsme objekty zvolili právě takto, je opravdu malá~\cite{Tan05}: $$P = \frac{\mbox{počet možností výběru jednoho bodu z~každého shluku}}{\mbox{počet možností volby K~centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ Tato pravděpodobnost se blíží nule i~pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
 
 Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteční body~\cite{Tan05}:
 \begin{description}
-\item[více běhů] k-means je spuštěn několikrát s~různými počátečními body a~jako výstup je vybrán nejlepší výsledek.
+\item[více běhů] k-means je spuštěn několikrát s~různými počátečními body a~jako výstup je vybrán nejlepší výsledek. To nemusí vést k ideálnímu výběru iniciálních centroidů, protože pokud bychom chtěli mít alespoň 50\% šanci, že je vybereme, museli bychom pro hodnoty z příkladu udělat skoro 2000 běhů ($1 - (1 - 0.00036)^2000 \doteq 0.51$). Pokud ale spustíme algoritmus vícekrát s různými počátečními centroidy, můžeme vybrat lepší řešení.
 \item[vzorkování] Počáteční centroidy jsou vybrány na základě vzorkování vstupních dat hierarchickým shlukování.
 \item[více centroidů] Je vybráno více centroidů než je vstupní $k$ a~z nich se vyberou ty nejlépe rozmístěné.
 \item[následné zpracování] Výsledek algoritmu je následné zpracován - Shluky s~nej\-vyš\-ším $SSE$ jsou rozděleny a~na druhou stranu shluky s~nejnižším $SSE$ mohou být spojeny.
