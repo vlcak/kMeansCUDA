@@ -226,7 +226,38 @@ Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteč
 \item[následné zpracování] Výsledek algoritmu je následné zpracován - Shluky s~nej\-vyš\-ším $SSE$ jsou rozděleny a~na druhou stranu shluky s~nejnižším $SSE$ mohou být spojeny.
 \end{description} 
 
-Dalším problémem k-means je, že základní verze může produkovat i~prázdné shluky. To lze vyřešit úpravou algoritmu: pokud najdeme prázdný shluk, můžeme ho nahradit bodem, který nejvíce přispívá k~$SSE$. Další možností je vybrat bod z~clusteru s~největším $SSE$ ~\cite{Tan05}.\\
+Dalším problémem k-means je, že základní verze může produkovat i~prázdné shluky~(\autoref{fig:kmeansemptycluster}). To lze vyřešit úpravou algoritmu: pokud najdeme prázdný shluk, můžeme ho nahradit bodem, který nejvíce přispívá k~$SSE$. Další možností je vybrat bod z~clusteru s~největším $SSE$ ~\cite{Tan05}.\\
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/kmeans_emptyCluster1.eps}
+  \caption{Vstupní data}
+  \label{fig:kmeansemptycluster1}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/kmeans_emptyCluster2.eps}
+  \caption{Jako iniciální centroidy zvolíme body 1,2,3}
+  \label{fig:kmeansemptycluster2}
+\end{subfigure}
+\vspace*{0.5cm} 
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/kmeans_emptyCluster3.eps}
+  \caption{Přiřazení ke clusterům a výpočet nových (vzdálenost mezi 1 a 7 je větší než mezi 2 a 7)}
+  \label{fig:kmeansemptycluster3}
+\end{subfigure}
+\begin{subfigure}{.49\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/kmeans_emptyCluster4.eps}
+  \caption{Vznik prázdného clusteru (7 je blíže k zelenému centroidu, 2 blíže k růžovému)}
+  \label{fig:kmeansemptycluster4}
+\end{subfigure}
+\caption{Prázdný shluk}
+\label{fig:kmeansemptycluster}
+\end{figure}
 
 \subsection{Nevhodná data}
 Problematická mohou být také vstupní data. Pokud se shluky výrazně liší v~rozměrech/hustotě nebo jde-li o~nekulovité útvary, má pak shluková analýza problém s~nalezením centroidů~\cite{Tan05}. \\
