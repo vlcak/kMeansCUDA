@@ -262,7 +262,7 @@ Dalším problémem k-means je, že základní verze může produkovat i~prázdn
 \subsection{Nevhodná data}
 Problematická mohou být také vstupní data. Pokud se shluky výrazně liší v~rozměrech/hustotě nebo jde-li o~nekulovité útvary, má pak shluková analýza problém s~nalezením centroidů~\cite{Tan05}. \\
 
-Jelikož hlavním cílem k-means je nalézt shluky s~podobnou velikostí, budeme mít problém se vstupními daty, které obsahují jeden velký shluk s~mnoha objekty a~jeden menší shluk s~několika málo objekty~\autoref{fig:kmeansbadinputsize}. K-means potom rozdělí větší shluk~\autoref{fig:kmeansbadoutputsize}, takže objekty, které náleží logicky do většího shluku, ale zároveň jsou blíže centroidu z~menšímu shluku, jsou přiřazeny k~menšímu shluku, což může být nežádoucí. Je to dáno tím, že k-means ignorují distribuci vstupních dat.
+Jelikož hlavním cílem k-means je nalézt shluky s~podobnou velikostí, budeme mít problém se vstupními daty, které obsahují jeden velký shluk s~mnoha objekty a~jeden menší shluk s~několika málo objekty~(\autoref{fig:kmeansbadinputsize}). K-means potom rozdělí větší shluk~(\autoref{fig:kmeansbadoutputsize}), takže objekty, které náleží logicky do většího shluku, ale zároveň jsou blíže centroidu z~menšímu shluku, jsou přiřazeny k~menšímu shluku, což může být nežádoucí. Je to dáno tím, že k-means ignorují distribuci vstupních dat.
 
 \begin{figure}[h]
 \centering
@@ -281,7 +281,7 @@ Jelikož hlavním cílem k-means je nalézt shluky s~podobnou velikostí, budeme
 \caption{K-means nad shluky různých velikostí}
 \end{figure}
 
-Také hustota shluků může způsobovat k-means problémy. Když máme dva husté shluky blízko sebe a~jeden vzdálenější shluk s~nízkou hustotou~\autoref{fig:kmeansbadinputdensity}, k-means obvykle označují husté shluky jako jeden a~rozdělí řídký shluk do více shluků~\autoref{fig:kmeansbadoutputdensity}.
+Také hustota shluků může způsobovat k-means problémy. Když máme dva husté shluky blízko sebe a~jeden vzdálenější shluk s~nízkou hustotou~(\autoref{fig:kmeansbadinputdensity}), k-means obvykle označují husté shluky jako jeden a~rozdělí řídký shluk do více shluků~(\autoref{fig:kmeansbadoutputdensity}).
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
@@ -298,7 +298,7 @@ Také hustota shluků může způsobovat k-means problémy. Když máme dva hust
 \caption{K-means nad shluky různé hustoty}
 \end{figure}
 
-Dalším problémem je, že k-means algoritmus nerozpozná tvar shluku a~produkuje pouze kulové shluky. To je problém, pokud dva obvykle nekonvexní shluky~\autoref{fig:kmeansbadinputshape} jsou dostatečně blízko a~jeden zasahuje do konvexního obalu toho druhého. K-means pak obvykle přidělují body z~jednoho shluku do druhého a~naopak~\autoref{fig:kmeansbadoutputshape}.\\
+Další nevýhodouk-means je, že algoritmus nerozpozná tvar shluku a~produkuje pouze kulové shluky. To je problém, pokud dva obvykle nekonvexní shluky~(\autoref{fig:kmeansbadinputshape}) jsou dostatečně blízko a~jeden zasahuje do konvexního obalu toho druhého. K-means pak obvykle přidělují body z~jednoho shluku do druhého a~naopak~(\autoref{fig:kmeansbadoutputshape}).\\
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
@@ -315,7 +315,7 @@ Dalším problémem je, že k-means algoritmus nerozpozná tvar shluku a~produku
 \caption{K-means nad nekulovitými shluky}
 \end{figure}
 
-Tyto problémy mohou být vyřešeny použitím více shluků, než přirozeně vyžadují vstupní data. Například vstupní data~\autoref{fig:kmeansbadinputshape} obsahují dva přirozené shluky, ale když se pokusíme rozdělit data na více shluků, výsledek bude obsahovat malé shluky, které obsahují body z~jednoho přirozeného shluku a~neobsahují shluky z~druhého~\autoref{fig:kmeansbadoutputsolution}. Pokud tyto informace následně zpracujeme, můžeme získat očekávaný výsledek a~napravit tak tento nedostatek k-means.
+Tyto problémy mohou být vyřešeny použitím více shluků, než přirozeně vyžadují vstupní data. Například vstupní data~(\autoref{fig:kmeansbadinputshape}) obsahují dva přirozené shluky, ale když se pokusíme rozdělit data na více shluků, výsledek bude obsahovat malé shluky, které obsahují body z~jednoho přirozeného shluku a~neobsahují shluky z~druhého~(\autoref{fig:kmeansbadoutputsolution}). Pokud tyto informace následně zpracujeme, můžeme získat očekávaný výsledek a~napravit tak tento nedostatek k-means.
 \begin{figure}[h]
   \centering
   \includegraphics[width=.3\textwidth]{img/kmeans_badOutputSampleShapeSolution.eps}
@@ -327,11 +327,11 @@ Tyto problémy mohou být vyřešeny použitím více shluků, než přirozeně 
 \subsection{Varianty k-means}
 Protože k-means jsou univerzálním algoritmem, existují různé varianty pro případy, kdy je klasický algoritmus k-means nevhodný nebo nepoužitelný. Tyto varianty mohou vyřešit některé problémy a~omezení klasického algoritmu k-means.
 \begin{description}
-\item[k-medoids] - centroidy nejsou uměle vytvořené body v~prostoru $R^d$, ale reálné body ze vstupních dat, jejichž průměrná odchylka od ostatních bodů ve shluku je minimální (místo průměru se využívá medián).
-\item[k-medians] - stejný algoritmus jako k-means, ale pro výpočet nového centroidu se pro každou dimenzi využívá medián místo výpočtu průměrné hodnoty.
+\item[k-medoids] - centroidy nejsou uměle vytvořené objekty v~prostoru vstupních dat, ale reálné objekty ze vstupu (medoidy nebo exepláře). Na rozdíl od k-means se zde nesnažíme minimalizovat celkovou vzdálenost, ale součet odchylek mezi objekty shluku a objektu vybraného jako střed shluku.
+\item[k-medians] - stejný algoritmus jako k-means, ale pro výpočet nového centroidu se pro každou dimenzi využívá medián místo výpočtu průměrné hodnoty. Hodnoty v jednotlivých dimenzích jsou tedy reálné hodnoty ze vstupních dat, ale celý objekt ve vstupních datech nemusí být vůbec obsažen.
 \item[k-means++] - Počáteční centroidy jsou vybrány náhodně. Tím lze zabránit potenciálním špatným vstupům.
-\item[Fuzzy K-means] - jsou povoleny neostré shluky~\ref{sec:clusterorganization}. Objekty nepatří striktně jednomu shluku, ale využíváme stupeň náležení k~jednotlivým shlukům. Pro výpočet nových centroidů se využívá vážený průměr (kde je jako váha brán stupeň náležení).
-\item[Rozdělující (Bisecting) k-means]~\cite{Tan05} je varianta k-means, která produkuje hierarchické uspořádání shluků. Pracuje, stejně jako k-means, iterativně, ale v~každém kroku je shluk s~nejvyšším $SSE$ rozdělen na 2 pomocí klasického k-means algoritmu s~parametrem $k=2$. Algoritmus iteruje, dokud nedosáhne daného počtu shluků~\autoref{alg:bisectingkmeans}.
+\item[Fuzzy K-means] - jsou povoleny neostré shluky~(\autoref{sec:clusterorganization}). Objekty nepatří striktně jednomu shluku, ale využíváme stupeň náležení k~jednotlivým shlukům. Pro výpočet nových centroidů se využívá vážený průměr (kde je jako váha brán stupeň náležení).
+\item[Rozdělující (Bisecting) k-means]~\cite{Tan05} je varianta k-means, která produkuje hierarchické uspořádání shluků. Pracuje, stejně jako k-means, iterativně, ale v~každém kroku je shluk s~nejvyšším $SSE$ rozdělen na 2 pomocí klasického k-means algoritmu s~parametrem $k=2$. \autoref{alg:bisectingkmeans} iteruje, dokud nedosáhne daného počtu shluků.
 \begin{algorithm}
 \caption{Rozdělující k-means}\label{alg:bisectingkmeans}
 \begin{algorithmic}[1]
