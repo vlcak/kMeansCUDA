@@ -215,7 +215,7 @@ Abychom mohli vyhodnotit výstup k-means, musíme umět měřit kvalitu přiřaz
 $$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }$$
 Pokud dostáváme výsledky s vysokým $SSE$, můžeme jej snížit například zvýšením počtu shluků $k$. Pokud jsou ale počáteční shluky vybrány špatně, nemusí ani zvýšení počtu shluků pomoci a je potřeba vybrat jiné počáteční centroidy (změnit algoritmus výběru).\\
 
-\subsection{Omezení k-means}
+\subsection{Omezení k-means} \label{ssec:kmeansrestrictions}
 Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu, protože jej potřebujeme znát již na začátku a~v~základní variantě k-means už toto číslo nelze změnit během výpočtu. Tuto možnost mohou ale některé typy problémů vyžadovat a~tak jsou pro ně k-means nepoužitelné.  I~když zvolíme ideální $k$ pro vstupní data, dostaneme se k dalšímu problému, kterým je výběr počátečních centroidů. V ideálním případě jsou totiž počáteční centroidy každý z~jiného shluku, ale pravděpodobnost, že jsme objekty zvolili právě takto, je opravdu malá~\cite{Tan05}: $$P = \frac{\mbox{počet možností výběru jednoho bodu z~každého shluku}}{\mbox{počet možností volby K~centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ Tato pravděpodobnost se blíží nule i~pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
 
 Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteční body~\cite{Tan05}:
@@ -298,7 +298,7 @@ Také hustota shluků může způsobovat k-means problémy. Když máme dva hust
 \caption{K-means nad shluky různé hustoty}
 \end{figure}
 
-Další nevýhodouk-means je, že algoritmus nerozpozná tvar shluku a~produkuje pouze kulové shluky. To je problém, pokud dva obvykle nekonvexní shluky~(\autoref{fig:kmeansbadinputshape}) jsou dostatečně blízko a~jeden zasahuje do konvexního obalu toho druhého. K-means pak obvykle přidělují body z~jednoho shluku do druhého a~naopak~(\autoref{fig:kmeansbadoutputshape}).\\
+Další nevýhodou k-means je, že algoritmus nerozpozná tvar shluku a~produkuje pouze kulové shluky. To je problém, pokud dva obvykle nekonvexní shluky~(\autoref{fig:kmeansbadinputshape}) jsou dostatečně blízko a~jeden zasahuje do konvexního obalu toho druhého. K-means pak obvykle přidělují body z~jednoho shluku do druhého a~naopak~(\autoref{fig:kmeansbadoutputshape}).\\
 \begin{figure}[h]
 \begin{subfigure}{.49\textwidth}
   \centering
@@ -348,3 +348,9 @@ Protože k-means jsou univerzálním algoritmem, existují různé varianty pro 
 \end{algorithm}
 
 \end{description}
+
+\subsection{Optimalizace a heuristiky implementace K-means} \label{ssec:optimization}
+Stejně jako většina jiných algoritmů, i u k-means při bližším zkoumání nalezneme při implementování místa, kde lze algoritmus optimalizovat nebo zrychlit pomocí heuristik.
+Zaměříme se tedy na jednotlivé kroky algoritmu k-means~\ref{alg:kmeans}
+\subsubsection{Inicializace}
+Hned první možností pro vylepšení je inicializace algoritmu, konkrétně výběr počátečních centroidů. Pokud se nám totiž podaří program dobře inicializovat, vyhneme se velkému množství iterací. Středy shluků jsou v základní verzi vybrány tak, že se vezme prvních $n$ bodů ze vstupu a prohlásíme se za středy budoucích clusterů. Může se tak stát, že pro nevhodná data zvolíme všechny body z jednoho shluku a tím pádem budeme muset provést více iterací, než dojdeme k výsledku. Ideální případ, jak již bylo napsáno výše~\autoref{ssec:kmeansrestrictions}, je vybrat body z různých shluků, ale pravděpodobnost takového výběru je velice malá. Je tedy potřeba zvolit vhodnou heuristiku pro výběr počátečních clusterů.
