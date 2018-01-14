@@ -352,5 +352,25 @@ Protože k-means jsou univerzálním algoritmem, existují různé varianty pro 
 \subsection{Optimalizace a heuristiky implementace K-means} \label{ssec:optimization}
 Stejně jako většina jiných algoritmů, i u k-means při bližším zkoumání nalezneme při implementování místa, kde lze algoritmus optimalizovat nebo zrychlit pomocí heuristik.
 Zaměříme se tedy na jednotlivé kroky algoritmu k-means~\ref{alg:kmeans}
+
 \subsubsection{Inicializace}
-Hned první možností pro vylepšení je inicializace algoritmu, konkrétně výběr počátečních centroidů. Pokud se nám totiž podaří program dobře inicializovat, vyhneme se velkému množství iterací. Středy shluků jsou v základní verzi vybrány tak, že se vezme prvních $n$ bodů ze vstupu a prohlásíme se za středy budoucích clusterů. Může se tak stát, že pro nevhodná data zvolíme všechny body z jednoho shluku a tím pádem budeme muset provést více iterací, než dojdeme k výsledku. Ideální případ, jak již bylo napsáno výše~\autoref{ssec:kmeansrestrictions}, je vybrat body z různých shluků, ale pravděpodobnost takového výběru je velice malá. Je tedy potřeba zvolit vhodnou heuristiku pro výběr počátečních clusterů.
+Hned první možností pro vylepšení je inicializace algoritmu, konkrétně výběr počátečních centroidů. Pokud se nám totiž podaří program dobře inicializovat, vyhneme se velkému množství iterací. Středy shluků jsou v základní verzi vybrány tak, že se vezme prvních $n$ bodů ze vstupu a prohlásíme je za středy budoucích clusterů. Může se tak stát, že pro nevhodná data zvolíme všechny body z jednoho shluku a tím pádem budeme muset provést více iterací, než dojdeme k výsledku. Ideální případ, jak již bylo napsáno výše v sekci~\ref{ssec:kmeansrestrictions}, je vybrat body z různých shluků, ale pravděpodobnost takového výběru je velice malá. Je tedy potřeba zvolit vhodnou heuristiku pro výběr počátečních clusterů. K tomu se často využívají k-dimenzionální stromy.
+
+\subsubsection{k-dimenzinální stromy}
+k-dimenzinální stromy (nebo kd-stromy) jsou strukturou určenou pro ukládání vícerozměrných dat. Jde o binární strom, kde každý uzel reprezentuje podmnožinu bodů a jeho potomci pak tuto podmnožinu rozdělují na disjunktní podmnožiny. Dělení probíhá tak, že spočítáme medián dimenze $d$ ze všech bodů v intervalu reprezentovaném uzlem. V levém potomkovi jsou pak body s menší hodnotou v dimenzi $d$, v pravém pak s větší hodnotou. Na každé hladině se střídá dimenze, podle které body dělíme až nakonec v listech jsou pouze množiny obsahující jednotlivé body. V každém volání funkce kdTree v~algoritmu~\ref{alg:kdtreeconstruction} se body rozdělí na polovinu. Počet volání funkce je tedy $\log_2(n)$. Výběr mediánu lze zvládnout v čase $\mathcal{O}(n)$ díky podobném triku jako například v algoritmu Quicksort~\cite{Cormen07}. Roztřízení bodů je pak také v čase $\mathcal{O}(n)$. Celková složitost konstrukce kd-stromu je tedy $\mathcal{O}(n \log(n))$.
+
+\begin{algorithm}
+\caption{Konstrukce kd-stromu}\label{alg:kdtreeconstruction}
+\begin{algorithmic}[1]
+\Function{kdTree}{bodyKRozdělení, hloubka}
+\State Pokud velikost(bodyKRozdělení) = 1, vrať list
+\State Vyber rozdělující dimenzi d podle hloubky
+\State Vyber medián m z d-té dimenze v bodyKRozdělení
+\State levý syn = kdtree(body b z bodyKrozdělení kde b[d] < m, hloubka++)
+\State pravý syn = kdtree(body b z bodyKrozdělení kde n[d] > m, hloubka++)
+\State vrať zkonstruovaný bod
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+Pro využití kd-stromu v algoritmu k-means nemusíme stavět celý strom, což by bylo velice náročné, ale stačí nám rozdělit body do tolika podmnožin, abychom z každé z nich mohli vybrat jeden počáteční centroid. Pokusy ukazují, že výběr iniciálních bodů pomocí kd-stromů je efektivnější, než náhodný výběr~\cite{Pahala10}.
