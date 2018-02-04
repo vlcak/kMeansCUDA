@@ -158,7 +158,7 @@ Další vzdálenost použitá ve statistice je Wassersteinova metrika (nazývan�
 Existují také prostory, které nemají s~matematikou mnoho společného, ale obsahují objekty, které jsou porovnatelné.
 
 \subsubsection{Levenshteinova vzdálenost} Levenshteinova vzdálenost se používá k~výpočtu editační vzdálenosti mezi dvěma řetězci $ a, b $ a~je rekurzivně definována takto:
-\begin{equation*}
+\begin{equation}\label{eq:levenshtein}
 lev_{a,b}(i,j)=
 \begin{cases}
 max(i,j) & $pokud $ min(i,j)=0, \cr
@@ -168,7 +168,7 @@ lev_{a,b}(i,j-1) + 1 \cr
 lev_{a,b}(i-1,j-1) + dif(a_i,b_j)
 \end{cases} & $jinak$
 \end{cases}
-\end{equation*}
+\end{equation}
 kde \begin{equation*}
 dif(a_i,b_j)=
 \begin{cases}
@@ -212,11 +212,17 @@ Složitost výpočtu je $O(n\times k\times i\times d)$, kde $n$ je počet vstupn
 
 \subsection{Měření kvality}
 Abychom mohli vyhodnotit výstup k-means, musíme umět měřit kvalitu přiřazení do shluků. Pro tento účel se nejčastěji používá funkce \textbf{Sum of Squared Error (SSE)}. Chyba jednoho bodu je reprezentována vzdáleností od centroidu daného shluku a~funkce SSE pak sčítá čtverce chyb jednotlivých bodů.
-$$SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }$$
+\begin{equation}\label{eq:SSE}
+SSE = \sum^k_{i=1}\sum_{o \in O_i}|o,c_i|^2, \textrm{ $c_i$ \textit{je středem shluku} $O_i$ }
+\end{equation}
 Pokud dostáváme výsledky s vysokým $SSE$, můžeme jej snížit například zvýšením počtu shluků $k$. Pokud jsou ale počáteční shluky vybrány špatně, nemusí ani zvýšení počtu shluků pomoci a je potřeba vybrat jiné počáteční centroidy (změnit algoritmus výběru).\\
 
 \subsection{Omezení k-means} \label{ssec:kmeansrestrictions}
-Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu, protože jej potřebujeme znát již na začátku a~v~základní variantě k-means už toto číslo nelze změnit během výpočtu. Tuto možnost mohou ale některé typy problémů vyžadovat a~tak jsou pro ně k-means nepoužitelné.  I~když zvolíme ideální $k$ pro vstupní data, dostaneme se k dalšímu problému, kterým je výběr počátečních centroidů. V ideálním případě jsou totiž počáteční centroidy každý z~jiného shluku, ale pravděpodobnost, že jsme objekty zvolili právě takto, je opravdu malá~\cite{Tan05}: $$P = \frac{\mbox{počet možností výběru jednoho bodu z~každého shluku}}{\mbox{počet možností volby K~centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}$$ Tato pravděpodobnost se blíží nule i~pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
+Pevný počet počátečních centroidů je jednou z~nevýhod k-means algoritmu, protože jej potřebujeme znát již na začátku a~v~základní variantě k-means už toto číslo nelze změnit během výpočtu. Tuto možnost mohou ale některé typy problémů vyžadovat a~tak jsou pro ně k-means nepoužitelné.  I~když zvolíme ideální $k$ pro vstupní data, dostaneme se k dalšímu problému, kterým je výběr počátečních centroidů. V ideálním případě jsou totiž počáteční centroidy každý z~jiného shluku, ale pravděpodobnost, že jsme objekty zvolili právě takto, je opravdu malá~\cite{Tan05}:
+\begin{equation}\label{eq:centroidChooseProbability}
+P = \frac{\mbox{počet možností výběru jednoho bodu z~každého shluku}}{\mbox{počet možností volby K~centroidů}}=\frac{k!{n \choose k}}{k^k {n \choose k} }=\frac{k!}{k^k}
+\end{equation}
+Tato pravděpodobnost se blíží nule i~pro relativně malé $k$. Například pro $k=10$, je pravděpodobnost $0.00036$. \\
 
 Existují ale způsoby, jak tento problém vyřešit a~vybrat lepší počáteční body~\cite{Tan05}:
 \begin{description}
@@ -356,17 +362,33 @@ Zaměříme se tedy na jednotlivé kroky algoritmu k-means~\ref{alg:kmeans}
 \subsubsection{Inicializace}
 Hned první možností pro vylepšení je inicializace algoritmu, konkrétně výběr počátečních centroidů. Pokud se nám totiž podaří program dobře inicializovat, vyhneme se velkému množství iterací. Středy shluků jsou v základní verzi vybrány tak, že se vezme prvních $n$ bodů ze vstupu a prohlásíme je za středy budoucích clusterů. Může se tak stát, že pro nevhodná data zvolíme všechny body z jednoho shluku a tím pádem budeme muset provést více iterací, než dojdeme k výsledku. Ideální případ, jak již bylo napsáno výše v sekci~\ref{ssec:kmeansrestrictions}, je vybrat body z různých shluků, ale pravděpodobnost takového výběru je velice malá. Je tedy potřeba zvolit vhodnou heuristiku pro výběr počátečních clusterů.\\% K tomu se často využívají k-dimenzionální stromy.
 
-Jednu z prvních metod, jak počáteční body vybrat, navrhl Forgy v roce 1965~\cite{Anderberg73}. Jeho myšlenka spočívá jednoduše v tom, že jsou body vybrány náhodně ze vstupních dat. Pokud centroidy zvolíme takto, je větší šance, že to budou v blízkosti středů reálných shluků, protože jde o místa s největší hustotou bodů. Není zde ale žádná záruka, že nezvolíme 2 body ze stejného shluku a nebo že nezvolíme odlehlý bod. I přes své nevýhody se ale Forgyho metoda standardně používá ve spojení s vícenásobným spuštěním.\\
+Jednu z prvních metod, jak počáteční body vybrat, navrhl Forgy v roce 1965~\cite{Anderberg73}. Jeho myšlenka spočívá jednoduše v tom, že jsou body vybrány náhodně ze vstupních dat. Pokud centroidy zvolíme takto, je větší šance, že to budou v blízkosti středů reálných shluků, protože jde o místa s největší hustotou bodů. Není zde ale žádná záruka, že nezvolíme 2 body ze stejného shluku~(\autoref{eq:centroidChooseProbability}) a nebo že nezvolíme odlehlý bod. I přes své nevýhody se ale Forgyho metoda standardně používá ve spojení s vícenásobným spuštěním.\\
 
 S další metodou přišel v roce 1967 J. B. MacQueen~\cite{MacQueen67}. Jeho metoda je podobná Forgyho přístupu. Na začátku se také vyberou náhodné body ze vstupních dat jako počáteční centroidy, ale pak se místo rozřazení všech bodů do shluků a iterování k výsledku postupuje jinak. V každém kroku vezmeme následující bod ze vstupu a přiřadíme ho k nejbližšímu centroidu. Poté spustíme k-means, čímž se nám centroidy změní, a teprve pak začneme zpracovávat další bod. Problém tohoto přístupu je samozřejmě ve výpočetní složitosti, protože se k-means spouští pro každý bod, což je pro velká vstupní data velice náročné.\\
 
-\subsubsection{k-dimenzinální stromy}
+V roce 1974 přišli Tou a Gonzales s Simple Cluster-Seeking (SCS)~\cite{Tou74}. Ta vybere první bod ze vstupu jako střed a poté postupně prochází zbylá data. Pokud je vzdálenost prohlíženého bodu od již vybraných středů větší než zvolený práh, označíme ji jako další střed a pokračujeme dokud nenajdeme všech $k$ bodů. Problémem této metody je závislost na seřazení vstupních bodů a především nutnost zvolit hodnotu prahu.\\
+
+S metodou binárního dělení (Binary splitting, BS) přišel v roce 1980 Linde a kolektiv.~\cite{Linde80}. Nejdříve spustíme algoritmus k-means s $k=1$. Z nalezeného středu $c$ vytvoříme 2 nové $c-\epsilon$ a $c+\epsilon$, kde $\epsilon$ je malý náhodný vektor. Pak spustíme k-means znovu s $k=2$ a nově nalezené středy opět rozdělíme stejným způsobem. Takto postupujeme, dokud nenalezneme potřebný počet středů nebo pokud každý shluk obsahuje pouze jeden bod. Tato metody je výpočetně náročnější, protože v každém kroku spouštíme k-means. Výsledné rozdělení také velmi ovlivňuje parametr $\epsilon$, který v každém kroku určuje rozdělení nových středů.\\
+
+Kaufman a Rousseeuw navrhli v roce 1990 postup založený na SSE~(\autoref{eq:SSE})~\cite{kaufman90}. První bod je zvolen ten, který je umístěn nevíce ve středu. Poté zjišťujeme, který bod nejvíce přispívá k $SSE$. Ten vybereme jako následující střed a takto pokračujeme, dokud nevybereme všech $k$ centroidů. Nedostatkem algoritmu je opět výpočetní složitost potřebná pro výběr každého středu.\\
+
+Publikace od autorů Babu a Murty (1993)~\cite{babu93} obsahuje metodu na aproximaci ideálního výběru centroidů pomocí genetického programování. Populaci zde tvoří různé výběry počátečních shluků a fitness funkci spočítáme spuštěním algoritmu k-means a jeho výslednou $SSE$. Z nejlepších kandidátů pak vytvoříme nové pro další generaci jako v běžných genetických algoritmech. I přes to, že tato metoda může v mnohým případech nalézt optimální rozdělení, je velice zatížena svou výpočetní složitostí, protože pro každého jedince v každé generaci musíme spustit algoritmus k-means. Metoda také dědí problémy genetického programování, kde je výsledek velmi ovlivněn velikostí populace, křížením a mutacemi.\\
+
+Algoritmus KKZ~\cite{katsavounidis94} od Katsavounidise z roku 1994 vybírá jako první centroid bod z "okrajových bodů" vstupních dat. Pak najdeme nejvdzálenější bod k tomuto bodu a zvolíme ho druhým středem. Poté pro každý ze vstupních bodů spočteme vzdálenost k bližšímu ze dvou středů. Jako další centroid pak vybereme bod, který je nejvzdálenější svému nejbližšímu středu. Takto postupujeme dál (vybíráme bod, který je nejvzdálenší od nejbližšího středu) dokud nedostaneme všech $k$ centroidů. Tato metoda má problémy se šumem ve vstupních datech, protože odlehlé body budou většinou zvoleny jako ideální střed shluku i když jím nejsou.\\
+
+Další metodu představili Daoud a Roberts v roce 1996~\cite{daoud96}. Ta rozdělí vstupní data do $m$ disjunktních podprostorů $S_j, j = 1,...,m$. Spočítáme počet bodů $n_j$ v každém podprostoru a poté v každém vybereme náhodně $k_j$ centroidů, kde $k_j = k \times (n_j/n)$.\\
+
+Bradley a Fayyad v roce 1998 přišli s metodou~\cite{bradley98}, která náhodně rozdělí vstupní data do 10 podmnožin a na každé z podmnožin spustí algoritmus k-means se stejnými počátečními středy, které vybereme náhodně jako Forgy. Z těchto běhů dostaneme $10k$ centroidů, které pak slouží jako vstup pro algoritmus k-means. Ten spustíme pro každou výslednou množinu shluků z předchozích 10 běhů.\\
+
+V roce 2003 prezentoval Likas a spol.~\cite{likas03} inicializaci algoritmu pomocí kd-stromu, pomocí kterého vytvořili $k$ množin a jejich centroidy pak využili jako iniciální středy pro algoritmus k-means.
+
+\subsubsection{k-dimenzinální stromy}\label{sssec:kdtrees}
 k-dimenzinální stromy (nebo kd-stromy) jsou strukturou určenou pro ukládání vícerozměrných dat. Jde o binární strom, kde každý uzel reprezentuje podmnožinu bodů a jeho potomci pak tuto podmnožinu rozdělují na disjunktní podmnožiny. Dělení probíhá tak, že spočítáme medián dimenze $d$ ze všech bodů v intervalu reprezentovaném uzlem. V levém potomkovi jsou pak body s menší hodnotou v dimenzi $d$, v pravém pak s větší hodnotou. Na každé hladině se střídá dimenze, podle které body dělíme až nakonec v listech jsou pouze množiny obsahující jednotlivé body. V každém volání funkce kdTree v~algoritmu~\ref{alg:kdtreeconstruction} se body rozdělí na polovinu. Počet volání funkce je tedy $\log_2(n)$. Výběr mediánu lze zvládnout v čase $\mathcal{O}(n)$ díky podobném triku jako například v algoritmu Quicksort~\cite{Cormen07}. Roztřízení bodů je pak také v čase $\mathcal{O}(n)$. Celková složitost konstrukce kd-stromu je tedy $\mathcal{O}(n \log(n))$.
 
 \begin{algorithm}
 \caption{Konstrukce kd-stromu}\label{alg:kdtreeconstruction}
 \begin{algorithmic}[1]
-\Function{kdTree}{bodyKRozdělení, hloubka}
+\Function{kdStrom}{bodyKRozdělení, hloubka}
 \State Pokud velikost(bodyKRozdělení) = 1, vrať list
 \State Vyber rozdělující dimenzi d podle hloubky
 \State Vyber medián m z d-té dimenze v bodyKRozdělení
