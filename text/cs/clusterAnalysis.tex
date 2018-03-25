@@ -421,7 +421,7 @@ Dalším místem, kde lze urychlit algoritmus k-means, je výpočet nových cent
 
 Abychom ověřili, zda je daný centroid $c$ vlastníkem hyperkvádru $h$, měli bychom formálně spočítat všechny vzdálenosti mezi body z $h$ a všemi centroidy. To ovšem není vždy nutné. Máme-li hyperkvádr $h$ a 2 centroidy $c_1$ a $c_2$, řekneme, že $c_1$ dominuje $c_2$ v $h$, pokud $\forall p \in h: d(p,c_1) < d(p,c_2)$. Pokud tedy $c$ dominuje všem ostatním centroidům v hyperkvádru $h$, je zároveň i jeho vlastníkem. Pro zjištění, zda jeden centroid dominuje druhému nad daným hyperkvádrem, nemusíme počítat vzdálenost od všech bodů, ale stačí nám spočítat, zda jsou všechny okrajové body hyperkvádru blíže jednomu z bodů.\\
 
-Pro výpočet nových centroiů budeme tedy postupovat rekurzivně kd-stromem od kořene k listům. Pokud jsme schopni nalézt vlastníka uzlu, aktualizujeme jeho nástupce o počet a souřadnice všech bodů z uzlu. Tato informace je předpočítaná, protože kd-strom se v průběhu výpočtu nemění. Pokud vlastník neexistuje, postupujeme rekurzivně dál k potomkům uzlu.\\
+Pro výpočet nových centroidů budeme tedy postupovat rekurzivně kd-stromem od kořene k listům. Pokud jsme schopni nalézt vlastníka uzlu, aktualizujeme jeho nástupce o počet a souřadnice všech bodů z uzlu. Tato informace je předpočítaná, protože kd-strom se v průběhu výpočtu nemění. Pokud vlastník neexistuje, postupujeme rekurzivně dál k potomkům uzlu.\\
 
 Dalším vylepšením tohoto přístupu je takzvaný "blacklisting". Když se pokoušíme nalézt vlastníka hyperkvádru $h$, máme 2 možnosti. Buď vlastník existuje, a nebo je potřeba pokračovat rekurzivně. V tom případě ale můžeme pro daný podstrom vyřadit všechny centroidy, kterým dominuje jiný centroid, protože nemohou být vlastníkem žádného z bodů v uzlu (pro každý platí, že dominující centroid je mu blíže). Takto můžeme sestupovat kd-stromem až do chvíle, dokud nám nezbyde právě jeden možný centroid.\\
 
@@ -429,8 +429,31 @@ Zmíněná vylepšení dosahují až trojnásobného zrychlení při nižších 
 
 S odlišným řešením přišli Y. Ding, Y. Zhao,  X. Shen, M. Musuvathi, T. Mytkowitz a M. Musuvathi s metodou Ying-Yang K-means~\cite{ding15}. Ti se zaměřili hlavně na redukci výpočtů vzdáleností při hledání nejbližšího shluku. Řešení se skládá ze 3 druhů filtrů: Globálního, skupinového a lokálního a využívá se především trojúhelníkové nerovnosti.\\
 
-V globálním filtru se snažíme na základě předešlé iterace zjistit, zda je v nové iteraci potřeba počítat vzálenost k jiným centroidům. K tomu si udržujeme pro každý bod 2 hodnoty. První je \textit{horní mez (ub)} $ub(x) \ge d(x,b(x))$, kde $b(x)$ značí nejbližší centroid bodu $x$. Druhou je \textit{dolní mez (lb)}, pro kterou platí $lb(x) \le d(x,c), \forall x \in C\backslash b(x)$. Hodnotu $ub(x)$ můžeme inicalizovat vzdáleností nejbližšího centroidu, hodnotu $lb(x)$ pomocí vzdálenosti k druhému nejbližšímu centroidu. Dále si zavedeme funkci $\delta(c)$, která určuje vzdálenost centroidu $c$ mezi dvěmi iteracemi. Pro globální filtr pak využijeme následující lemma:
-$$lb(x) - \max\limits_{c\in C}(c) \ge ub(x) + \delta(b(c))$$
-Oproti běžným k-means je tedy potřeba pro každý shluk spočítat $\delta(c)$ a navíc pro každý bod udržovat $ub(x)$ a $lb(x)$. Přesto, že globální filtrování může ušetřit hodně výpočtů vzdáleností, problém nastává, pokud se některé se shluků výrazně přesunují. I jeden takový centroid totiž ovlivní celý výpočet a globální filtr se tak stává neefektivním.
+V \textbf{globálním filtru} se snažíme na základě předešlé iterace zjistit, zda je v nové iteraci potřeba počítat vzdálenost k jiným centroidům. K tomu si udržujeme pro každý bod 2 hodnoty. První je \textit{horní mez (ub)} $ub(x) \ge d(x,b(x))$, kde $b(x)$ značí nejbližší centroid bodu $x$. Druhou je \textit{dolní mez (lb)}, pro kterou platí $lb(x) \le d(x,c), \forall x \in C\backslash b(x)$. Hodnotu $ub(x)$ můžeme inicializovat vzdáleností nejbližšího centroidu, hodnotu $lb(x)$ pomocí vzdálenosti k druhému nejbližšímu centroidu. Dále si zavedeme funkci $\delta(c)$, která určuje vzdálenost centroidu $c$ mezi dvěma iteracemi. Pro globální filtr pak využijeme následující lemma:
+\begin{lemma}\label{eq:yingyanggloballemma}
+(Podmínka globálního filtru) Bod $x$ nezmění přiřazení ke shluku $b = b(x)$ pokud:
+$$lb(x) - \max\limits_{c\in C}(c) \ge ub(x) + \delta(b)$$
+\end{lemma}
+Oproti běžným k-means je tedy potřeba pro každý shluk spočítat $\delta(c)$ a navíc pro každý bod udržovat $ub(x)$ a $lb(x)$. Přesto, že globální filtrování může ušetřit hodně výpočtů vzdáleností, problém nastává, pokud se některé se shluků výrazně přesunují. I jeden takový centroid totiž ovlivní celý výpočet a globální filtr se tak stává neefektivním.\\
 
+Tento nedostatek se snaží vyřešit \textbf{skupinový (group) filtr}. Ten před první iterací rozdělí centroidy na $t$ skupin $G={G_1,G_2,...,G_t}$. Pro každou skupinu pak spočítáme \textit{skupinovou dolní mez} následovně: $lb(x,G_i) \le d(x,c), \forall c \in G_i \backslash b(x)$ Tuto hodnotu nastavíme podobně jako v globálním filtru pomocí vzdálenosti k nejbližšímu centroidu v $G_i$ jinému než $b(x)$ a aktualizovat ji budeme obdobně: $lb'(x,G_i)=lb(x,G_i)-\max\limits_{c \in G_i}(\delta c)$. Pokud platí $lb'(x,G_i)\ge ub'(x)$, kde $ub'(x)$ je nová horní mez z globálního filtru, tak díky variantě lemma~\ref{eq:yingyanggloballemma} víme, že $x$ nepatří k žádnému z centroidů z $G_i$. Pokud tedy nemá $G_i$ žádné centroidy, které se hodně posouvají, můžeme celou skupinu odfiltrovat.\\
+
+Zbývá tedy určit hodnotu $t$ a způsob rozdělení clusterů. Pokud bude $t=1$, bude skupinový filtr fungovat stejně jako globální. Se zvyšujícím se $t$ potřebujeme více paměti a času na udržování a aktualizaci skupinových dolních mezí, ale také tím snížíme nežádoucí efekt clusterů, které se mezi iteracemi hodně mění. Experimenty autorů ukázaly, že ideální hodnotou $t$ je $k/10$. Jako nejlepší způsob rozdělení shluků do skupin se autorům osvědčilo shlukování na iniciálních centroidech, které má lepší výsledky než náhodné rozdělení díky tomu, že jsou si centroidy blíže. Shlukování centroidů je pouze jednorázové na začátku algoritmu. Přepočítávat skupiny v průběhu algoritmu se podle autorů nevyplatí.\\
+
+Skupinové filtrování se dá jednoduše spojit s globálním. Nejdříve se provede globální filtrování a až v případě, kdy bod není odfiltrován, porovnáváme jeho horní mez se skupinovými dolními mezemi.\\
+
+Pokud není skupina centroidů odfiltrována skupinovým filtrem, přichází na řadu \textbf{lokální filtr}. Abychom nemuseli počítat vzdálenost bodu $x$ ke všem centroidům z $G_i$, využijeme následujícího lemma:
+\begin{lemma}
+(Podmínka lokálního filtru) Centroid $c' \in G'_i$ nemůže být nejbližší centroid k bodu $x$, pokud existuje centroid $p' \ne c'$ ($p'$ nemusí být z $C'_i$), takový, že:
+$$d(x,p') < lb(x, G_i)-\delta(c)$$
+\end{lemma}
+Takto můžeme vynechat výpočet vzdálenosti k centroidům, které tuto podmínku splňují. Pro ty, které projdou i lokálním filtrem, spočítáme vzdálenost k $x$ a nejkratší vzdálenost k centroidu $c \in G'_i$ uložíme jako $lb(x,G'_i)$. Jako bod $p'$ se zdá být nejlepší zvolit dosavadní nejbližší centroid. Experimenty ale ukázaly, že je výhodnější použít druhý nejbližší centroid, protože díky němu dostaneme přesnou hodnotu skupinového spodního odhadu, což vede k efektivnějšímu skupinovému filtru v další iteraci.
+
+Autoři se ale také zaměřili na zlepšení druhého kroku algoritmu k-means (aktualizace centroidů). Myšlenka je založená na tom, že ne všechny body změnili svůj shluk. Pro výpočet nových centroidů je tedy možné využít těch starých následovně:
+$$c' = (c \ast |V| -(\sum\limits_{y\in V-OV}y) + \sum\limits_{y'\in V'-OV}y')/|V'|))$$
+kde $V$ a $V'$ reprezentují shluky v předešlém a aktuálním kroku, $OV = V\cap V'$ a $c$ a $c'$ jsou starý a nový centroid shluku.\\
+
+Výpočet nových centroidů tedy zabere méně kroků tehdy a jen tehdy, pokud změní shluk méně než polovina bodů. Algoritmus může jednoduše kontrolovat, zda takový případ nastal a podle toho zvolit konkrétní postup.\\
+
+Algoritmus Ying-Yang K-means tedy zrychluje oba kroky algoritmu k-means a experimenty autorů ukázali, že je rychlejší v průměru 9x než standardní implementace k-means. Navíc není ovlivněn velikostí dat, počtem dimenzí ani počtem shluků.
 \subsubsection{Paralelizace}
