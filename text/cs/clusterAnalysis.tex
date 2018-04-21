@@ -456,4 +456,14 @@ kde $V$ a $V'$ reprezentují shluky v předešlém a aktuálním kroku, $OV = V\
 Výpočet nových centroidů tedy zabere méně kroků tehdy a jen tehdy, pokud změní shluk méně než polovina bodů. Algoritmus může jednoduše kontrolovat, zda takový případ nastal a podle toho zvolit konkrétní postup.\\
 
 Algoritmus Ying-Yang K-means tedy zrychluje oba kroky algoritmu k-means a experimenty autorů ukázali, že je rychlejší v průměru 9x než standardní implementace k-means. Navíc není ovlivněn velikostí dat, počtem dimenzí ani počtem shluků.
+
 \subsubsection{Paralelizace}
+K-means obsahují mnoho výppočetně náročných operací, které prodlužují dobu výpočtu. Pro jeho urychlení je tedy dobré použít současné vícevláknové procesory a spustit algoritmus paralelně. Abychom toho byli schopni, musíme vyřešit výpočetní a datové závislosti.\\
+
+Už při prvním zkoumánízjistíme, že není možné počítat jednotlivé iterační kroky paraleně, protože pro každou další iteraci je potřeby výsledků z té předchozí. Zaměříme se tedy na paralelizaci jednoho iteračního kroku algoritmu. Při hledání nejbližšího centroidu nám nic nebrání, abychom počítali vzdýlenosti pro každý bod zvlášť. Pokud máme k dispozici dostatečný počet vláken, můžeme paralelizovat i výpočet vzdáleností od jednoho bodu k jednotlivým centroidům. V takovém případě už je ale potřeba spolupracovat při hledání nejbližšího centroidu. Při větším počtu diměnzí můžeme jít ještě dál, a počítat paralelně vzdálenost v každé zvlášť a pak vhodnou redukcí spočíst celkovou vzdálenost. Při tom je ale potřeba redukovat výpočet co nejefektivněji, jinak se může snadno stát, že bude paralení výpočet pomalejší než sériový.\\
+
+Paralelizace druhého kroku je složitější. Buď každé vlákno počítá jeden nový centroid, takže musí projít všechny body a hledat ty, které mu jsou přižazeny, nebo využijeme vlákna z předchozího kroku a ušetříme tak náročnou tvorbu novývh vláken. V tom případě ale musímě vyřešit problémy při spolupráci na výpočtu nových vláken. I v tomto kroku můžeme paralelizaci provádět až na úroveň jednotlivých dimenzí. Tím ale opět narůstá problém kooperace vláken a v obou případech je potřeba synchronizace.\\
+
+Při volbě konkrétního způsbu paralelizace velice záleží na vlastnostech a velikostech vstupních dat. Pokud ale vybereme správný přístup, můžeme výpočet několikanásobně urychlit. Pokud navíc využijeme moderní grafické karty, které jsou schopny počítat stovky až tisíce paralelních úloh, můžeme k-meas využít i v oblastech, kde by byl sériový výpočet nemožný.\\
+
+k-means jsou tedy univerzálním shlukovacím algoritmem, který je pro své vlastnosti používán v mnoha oblastech. Zárovň nabízí mnohé možnosti optimalizací a především paralelizace, čímž se stává rychlým nástrojem i při velkých objemech rozmanitých dat.
