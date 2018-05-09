@@ -57,7 +57,7 @@ Hlavním rozdílem mezi CPU a GPU je jejich specializaci. Na rozdíl od obecnéh
 %\end{tabular}
 %\end{table}
 \section{CUDA}
-CUDA (Compute Unified Device Architecture) je platforma pro paralelní výpočty pro GPGPU vyvýjená spoelčností Nvidia. Zahrnuje jak hardwarovou tak softwarovou architekturu integrovanou na grafických kartách Nvidia. CUDA podporuje více programovacích jazyků, konkrétně C, C++ a Fortran, což ji dělá přistupnější pro vývojáře. Existují i jiné platformy, jako například OpenCL, ale z důvodů popsaných výše se jimi nebudeme zabývat.\\
+CUDA (Compute Unified Device Architecture) je platforma pro paralelní výpočty pro GPGPU vyvíjená společností Nvidia. Zahrnuje jak hardwarovou tak softwarovou architekturu integrovanou na grafických kartách Nvidia. CUDA podporuje více programovacích jazyků, konkrétně C, C++ a Fortran, což ji dělá přístupnější pro vývojáře. Existují i jiné platformy, jako například OpenCL, ale z důvodů popsaných výše se jimi nebudeme zabývat.\\
 
 \begin{figure}[h]
 \centering
@@ -69,9 +69,12 @@ CUDA (Compute Unified Device Architecture) je platforma pro paralelní výpočty
 %\end{subfigure}
 %\begin{subfigure}{0.6\textwidth}
   %\centering
-  \includegraphics[width=1\linewidth]{img/SMMArchitecture.eps}
-  \caption{Architektura SMM (Maxwell)}
-  \label{fig:smmarchitecture}
+  %\includegraphics[width=1\linewidth]{img/SMMArchitecture.eps}
+  %\caption{Architektura SMM (Maxwell)}
+ % \label{fig:smmarchitecture}
+  \includegraphics[width=1.0\linewidth]{img/PSMArchitecture.eps}
+  \caption{Architektura PSM (Pascal)}
+  \label{fig:psmarchitecture}
 %\end{subfigure}
 %\vspace*{0.1cm} 
 %\begin{subfigure}{0.6\textwidth}
@@ -82,7 +85,7 @@ CUDA (Compute Unified Device Architecture) je platforma pro paralelní výpočty
 %\end{subfigure}
 \end{figure}
 
-CUDA architektura obsahuje více větších procesorů zvaných \textbf{Streaming Multiprocessor (SMP)}. Nejstarší generací je \textbf{SM} - Fermi, následuje \textbf{SMX} - Kepler a nejnovější \textbf{SMM} - Maxwell~\autoref{fig:smmarchitecture}. Každý SMP obsahuje výpočetní jádra s registry (32 na architektuře Fermi, 128 na architektuře Maxwell a 192 na architektuře Kepler), načitací a zápisové jendotky (load/store - LD/ST), jednotky pro speciální funkce (SFU), sdílenou instrukční cache, sdílenou paměť (shared memory) a datovou cache (data cache). LD/ST a SFU jednotky jsou sdíleny skupinami jader. Velikost těchto skupin závisí na konkrétní architektuře.\\
+CUDA architektura obsahuje více větších procesorů zvaných \textbf{Streaming Multiprocessor (SMP)}. Nejstarší generací je \textbf{SM} - Fermi, následuje \textbf{SMX} - Kepler, novější \textbf{SMM} - Maxwell a nejnovější \textbf{PSM} - Pascal~\autoref{fig:psmarchitecture}. Každý SMP obsahuje výpočetní jádra s registry (32 na architektuře Fermi, 64 na architektuře Pascal, 128 na architektuře Maxwell a 192 na architektuře Kepler), načitací a zápisové jednotky (load/store - LD/ST), jednotky pro speciální funkce (SFU), sdílenou instrukční cache, sdílenou paměť (shared memory) a datovou cache (data cache). LD/ST a SFU jednotky jsou sdíleny skupinami jader. Velikost těchto skupin závisí na konkrétní architektuře. Architektura Pascal navíc obsahuje ke každým 2 jednotkám pro single floating point operace ještě jednu double floating ponint jednotku (DP).\\
 
 \begin{figure}[h]
   \centering
@@ -91,9 +94,9 @@ CUDA architektura obsahuje více větších procesorů zvaných \textbf{Streamin
   \label{fig:cudamemhierarchy}
 \end{figure}
 
-Next different parameter of CUDA device is \textbf{Compute Capability} (CC), which describes the device characteristics and a set of instructions that are supported. CC is tightly coupled with architecture (CC 1.x was supported by Tesla architecture, CC 2.x by Fermi, 3.x by Kepler, 5.x by Maxwell).\\
+Dalším parametrem odlišující jednotlivé CUDA zařízení je \textbf{Compute Capability} (CC), která udává vlastnosti zařízení a sadu instrukcí, které jsou podporované. CC je úzce spjatá s architekturou(CC 1.x byla podporována architekturou Tesla, CC 2.x na Fermi, 3.x na Kepleru, 5.x na Maxwellu a 6.x na Pascalu).\\
 
-CUDA use Simple Instruction Multiple Thread (SIMT) model. This model approaching parallelism by broadcasting same instruction to multiple execution units, so only one instruction fetch/decode unit is needed for group of execution units. This model is similar to Simple Instruction Multiple Data (SIMD) model, but the difference is that SIMT also have multiple register sets. Main difference is that SIMD processes short vectors in parallel and always all threads do the same work. For example, when we need sum two vectors, SIMD must iterate through vectors and in one step, it can only process as many elements as a computing units count is. On CUDA with SIMT model, we launch as many threads as size of vector and each thread can store values in own register.\\
+CUDA využívá modelu Simple Instruction Multiple Thread (SIMT). Tento model přistupuje k paralelizaci tak, že je jedna instrukce vykonávána více výpočetními jednotkami, takže stačí pouze jedna fetch/decode jednotka pro načítání instrukcí pro celou skupinu výpočetních jednotek. Tento model je podobný modelu Simple Instruction Multiple Data (SIMD), ale rozdíl je v tom, že SIMT má více registrů. SIMD jednoduše zpracovává malé vektory paralelně a všechna vlákna dělají tu samou operaci. Pokud tedy chceme například sešíst 2 vektory, SIMD musí iterovat přes celý vektor a v každém kroku může zpracovat tolik prvků, kolik má výpočetních jednotek.Oproti tomu CUDA se SIMT modelem může nastartovat tolik vláken, jako je velikost vektoru a každé vlákno si pak výsledek uloží ve svém registru.\\
 
 \subsection{CUDA Workflow}
 When we want to launch CUDA program, first think what we must do in host code is detect CUDA capable devices. When desired device is selected, we could start with copying data from host to device. This action is asynchronous so we must synchronize execution of host code and memory transfer. When data transfer is done, we could launch device code called \textbf{kernel}. Kernel is same as normal C function but defined with special declaration and it can use special device functions specified by CC. \\
